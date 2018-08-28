@@ -256,7 +256,7 @@ class GroupMessage():
 
     #使用schedule模块执行定时任务
     def use_sche(self):
-        self.send_message()
+        #self.send_message()
         #schedule.every().day.at("5:00").do(self.send_message)
         #schedule.every().day.at("17:02").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
