@@ -49,7 +49,7 @@ class GroupMessage():
         self.myself = self.bot.self
         self.friend = self.bot.friends().search(self.friend_name)[0]
         #print self.bot.friends()
-        #print self.bot.groups()
+        print self.bot.groups()
         #print self.bot.mps()
        
 
@@ -57,7 +57,7 @@ class GroupMessage():
     def my_mps(self):
         @self.bot.register(MP)
         def print_mp_msg(msg):
-            print msg
+            #print msg
             if msg.type == SHARING and msg.sender.name == '爱净意':
                 for article in msg.articles:
                     if '妹子篇' in article.title:
@@ -276,7 +276,6 @@ class GroupMessage():
             print val
             try:
                 my_group = self.bot.groups().search(val)[0]
-                #print my_groups[i]
                 self.group_msg(self.group_list[i],my_group)
             except IndexError,e:
                 print '%s not exists, please check it!' %val
@@ -285,17 +284,18 @@ class GroupMessage():
             
     def main(self):
         self.login()
-        threads = []
+        #threads = []
         t1 = threading.Thread(target=self.run_task,args=())
         t1.setDaemon(True)
         t1.start()
-        t2 = threading.Thread(target=self.use_sche(),args=())
-        #t2.setDaemon(True)
-        t2.start()
         if self.recev_mps == 1:
-            t3 = threading.Thread(target=self.my_mps,args=())
-            t3.setDaemon(True)
-            t3.start()
+            t2 = threading.Thread(target=self.my_mps,args=())
+            t2.setDaemon(True)
+            t2.start()
+
+        t3 = threading.Thread(target=self.use_sche(),args=())
+        #t3.setDaemon(True)
+        t3.start()
 
         #embed()
 
