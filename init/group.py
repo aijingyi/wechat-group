@@ -29,8 +29,8 @@ class GroupMessage():
         self.group_list=group_names.strip(',').split(',')
         self.friend_name = cf.get('wechat','friends').decode('utf-8')
         self.newcomer = cf.get('wechat','newcomer')
-        self.recev_mps = cf.get('wechat','recev_mps')
-        self.xiaoi = cf.get('wechat','xiaoi')
+        self.recev_mps = int(cf.get('wechat','recev_mps'))
+        self.xiaoi = int(cf.get('wechat','xiaoi'))
         self.key = cf.get('wechat','key')
         self.secret = cf.get('wechat','secret')
     
@@ -57,6 +57,7 @@ class GroupMessage():
     def my_mps(self):
         @self.bot.register(MP)
         def print_mp_msg(msg):
+            print msg
             if msg.type == SHARING and msg.sender.name == '爱净意':
                 for article in msg.articles:
                     if '妹子篇' in article.title:
