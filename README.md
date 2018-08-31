@@ -14,7 +14,9 @@
 
 此版本运行于Python 2.7环境。
 使用之前需要安装所依赖的库:
-pip install wxpy
+wxpy
+xpinyin
+schedule
 
 
 文件说明
