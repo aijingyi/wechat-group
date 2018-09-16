@@ -11,7 +11,7 @@ import sys
 class GroupLog():
     def __init__(self,group_name,path):
         self.path = path
-        self.talk_path = os.path.join(self.path,'talks')
+        self.talk_path = os.path.join(self.path,'talks/')
         self.group_name = group_name
         #self.day = day = time.strftime("%Y-%m-%d")
         self.today=datetime.date.today() 

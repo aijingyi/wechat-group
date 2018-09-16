@@ -13,7 +13,9 @@ import sys
 from wxpy import *
 from xpinyin import Pinyin
 
+
 from init import analyze
+from init import express
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -30,12 +32,14 @@ class GroupMessage():
         self.friend_name = cf.get('wechat','friends').decode('utf-8')
         self.newcomer = cf.get('wechat','newcomer')
         self.recev_mps = int(cf.get('wechat','recev_mps'))
-        self.xiaoi = int(cf.get('wechat','xiaoi'))
+        self.use_xiaoi = int(cf.get('wechat','xiaoi'))
         self.key = cf.get('wechat','key')
         self.secret = cf.get('wechat','secret')
     
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
+        group_newcomer = cf.get('wechat', 'group_newcomer').decode('utf-8')
+        self.group_newcomer_list=group_newcomer.strip(',').split(',')
         self.send_time = cf.get('wechat', 'send_time').decode('utf-8')
      
         if not os.path.exists(self.path):
@@ -43,6 +47,12 @@ class GroupMessage():
         self.talk_path = os.path.join(self.path, 'talks')
         if not os.path.exists(self.talk_path):
             os.mkdir(self.talk_path)
+
+
+        self.xiaoi = XiaoI(self.key, self.secret)
+        
+
+        self.send_me = 11
 
     def login(self):
         self.bot = Bot(cache_path=True, console_qr=True)
@@ -58,9 +68,13 @@ class GroupMessage():
         @self.bot.register(MP)
         def print_mp_msg(msg):
             #print msg
+            #print dir(msg)
+            self.friend.send(msg)
+            #msg.forward(self.friend)
             if msg.type == SHARING and msg.sender.name == '爱净意':
                 for article in msg.articles:
                     if '妹子篇' in article.title:
+                        #article.forward(self.friend)
                         self.friend.send(article.title)
                         self.friend.send(article.url)
                     if  '妹子' in article.title and '现居北京' in article.title:
@@ -102,11 +116,25 @@ class GroupMessage():
             create_time = msg.create_time.strftime('%Y-%m-%d %H:%M:%S')
             name = msg.member.name
             #群内有被at的消息就会智能回复，支持图灵和小i机器人，默认小i
-            if msg.is_at and self.xiaoi == 1:
+            #print msg.is_at
+            #print self.use_xiaoi
+            if msg.is_at and self.use_xiaoi == 1:
                 #tuling = Tuling(api_key=self.key)
                 #tuling.do_reply(msg)
-                xiaoi = XiaoI(self.key, self.secret)
-                myself_text = xiaoi.do_reply(msg)
+                if u'，表情包' in msg.text:
+                    new_msg_total = msg.text.split(u'表情包')[1]
+                    #msg.reply(new_msg)
+                    pic_num = new_msg_total[0:1]
+                    if pic_num == '1':
+                        new_msg = new_msg_total[1:]
+                    else:
+                        new_msg = new_msg_total
+                    express.Make_express().make_pic(new_msg,pic_num)
+                    #msg.reply_image('material/target.jpg')
+                    msg.reply('@img@material/target.jpg')
+                    myself_text = new_msg
+                else:
+                    myself_text = self.xiaoi.do_reply(msg)
                 myword = "%s %s:%s\n" % (create_time, self.myself.name, myself_text)
                 
             #消息处理，TEXT文本，SHARING链接，PICTURE图片，RECORDING语音，
@@ -114,7 +142,7 @@ class GroupMessage():
             if msg.type == TEXT:
                 word = "%s %s:%s\n" % (create_time, name, msg.text)
             elif msg.type == SHARING:
-                #print  msg.raw
+                #print  msg
                 word = "%s %s:SHARING:%s\n" % (create_time, name, msg.text)
                 
             elif msg.type in [PICTURE, VIDEO,RECORDING,ATTACHMENT]:
@@ -134,11 +162,17 @@ class GroupMessage():
                     msg.get_file('%s/%s-%s-%s' % (pic_file,ct,name,msg.file_name))
                     word = "%s %s:ATTACHMENT:%s\n" % (create_time, name, msg.file_name)
             elif msg.type == NOTE:
-                if u'\u9080\u8bf7' in msg.text and self.newcomer == 1:
-                    #print 'Newcomer .......................'
-                    msg.reply_image('material/newcomer.jpg')
-                    #newcomer = '欢迎新人进入本群，请文明聊天'
-                    #msg.reply(newcomer)
+                if u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
+                    if group_n in self.group_newcomer_list: 
+                        new_name = msg.text.split('"')[-2]
+                        #print 'Newcomer .......................'
+                        #msg.reply_image('material/newcomer.jpg')
+                    
+                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，复制如下模板修改即可。"""% (new_name)
+                        newcomer1 = '北京-90-女-医药-默默'
+                        msg.reply(newcomer)
+                        time.sleep(2)
+                        msg.reply(newcomer1)
                     #myword = "%s %s:%s\n" % (create_time, self.myself.name, newcomer)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
@@ -157,6 +191,7 @@ class GroupMessage():
                     if myword:
                         f.write(myword.encode('utf-8'))
                     word = None
+            #msg.forward(self.friend)
     #记录日志
     def log_message(self,group_zh_name, word):
         log_file = os.path.join(self.path,group_zh_name)
@@ -207,16 +242,20 @@ class GroupMessage():
             else:
                 out_nums = 0
                 in_nums = 0
+                out_mem = ''
                 for i in members_list:
                     if i not in members_l:
                         in_nums +=1
                 for i in members_l:
                     if i not in members_list:
+                        out_mem = out_mem + i + '\n'
                         out_nums +=1
                 if out_nums == 0:
                     out_word = '没有人离开。'
                 else:
+                    #out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
                     out_word = '有%s人离开了。' %(out_nums)
+                   
                 if in_nums == 0:
                     in_word = '没有人进来，'
                 else:
@@ -231,33 +270,36 @@ class GroupMessage():
                 print_nums = '昨天没有人发言。'
             else:
                 print_nums = '昨天有%s人在群内侃侃而谈%s句。' %(nums[0],nums[1])
-            me = 10
-            if me == 1:
+            talks_total = print_nums + '\n\n' + nums[2]
+            if self.send_me == 1:
                 self.friend.send(group_n)
                 #self.friend.send(group_mem_stats)
-                self.friend.send_image('material/zaoan.png')
-                self.friend.send(member_word)
-                self.friend.send(print_nums)
-                self.friend.send(nums[2])
+                #self.friend.send_image('material/zaoan.png')
+                self.friend.send('Good morning!')
+                for me_num in [member_word, talks_total]:
+                    self.friend.send(me_num)
+              
             else:
                 #my_group.send(group_mem_stats)
-                my_group.send_image('material/zaoan.png')
-                my_group.send(member_word)
-                my_group.send(print_nums)
-                my_group.send(nums[2])
                 create_time = time.strftime('%Y-%m-%d %H:%M:%S')
-                #word = "%s %s:%s\n" % (create_time, self.myself.name, group_mem_status)
-                #self.log_message(group_zh_name, word)
+                #my_group.send_image('material/zaoan.png')
+                my_group.send('早上好！')
+                word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
+                self.log_message(group_zh_name, word)
+                for group_num in [member_word, talks_total]:
+                    time.sleep(2)
+                    my_group.send(group_num)
                 word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
                 self.log_message(group_zh_name, word)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
-                self.log_message(group_zh_name, word)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, nums[2])
+                #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
+                #self.log_message(group_zh_name, word)
+                word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
                 self.log_message(group_zh_name, word)
 
     #使用schedule模块执行定时任务
     def use_sche(self):
-        #self.send_message()
+        if self.send_me == 1:
+            self.send_message()
         #schedule.every().day.at("5:00").do(self.send_message)
         #schedule.every().day.at("17:02").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
@@ -265,7 +307,7 @@ class GroupMessage():
             #self.myself.send('log out')
             if not self.bot.alive:
                 print 'not login'
-                self.login()
+                self.main()
             schedule.run_pending()
             time.sleep(10)
     
@@ -279,7 +321,7 @@ class GroupMessage():
                 self.group_msg(self.group_list[i],my_group)
             except IndexError,e:
                 print '%s not exists, please check it!' %val
-        #embed()
+        embed()
         #self.bot.join()
             
     def main(self):
