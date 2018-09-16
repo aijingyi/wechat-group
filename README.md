@@ -17,6 +17,8 @@
 wxpy
 xpinyin
 schedule
+pillow
+PIL
 
 
 文件说明

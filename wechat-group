@@ -1,0 +1,30 @@
+#!/bin/sh
+
+
+
+PID=`ps -ef |grep run.py |grep -v grep |awk '{print $2}'`
+echo $PID
+
+start_soft()
+{
+    python run.py &>log/wechat.log &
+}
+
+stop_soft()
+{
+
+    kill -9 $PID
+}
+
+case $1 in
+    start)
+        start_soft;;
+    stop)
+        stop_soft;;
+    restart)
+        stop_soft ; start_soft;;
+    status)
+        ps -ef |grep run.py |grep -v grep;;
+    *)
+    echo error;;
+esac
