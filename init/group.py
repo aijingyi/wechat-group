@@ -15,11 +15,13 @@ from xpinyin import Pinyin
 
 
 from init import analyze
-from init import express
+#from init import express
+from init import logger
+from init import xiaoyu
 
 reload(sys)
 sys.setdefaultencoding('utf8')
-
+logging = logger.WriteLog()
 
 class GroupMessage():
     #从配置文件获取参数，初始化变量
@@ -30,6 +32,7 @@ class GroupMessage():
         group_names = cf.get('wechat', 'group_name').decode('utf-8')
         self.group_list=group_names.strip(',').split(',')
         self.friend_name = cf.get('wechat','friends').decode('utf-8')
+        self.friend_yy_name = cf.get('wechat','friends_yy').decode('utf-8')
         self.newcomer = cf.get('wechat','newcomer')
         self.recev_mps = int(cf.get('wechat','recev_mps'))
         self.use_xiaoi = int(cf.get('wechat','xiaoi'))
@@ -39,7 +42,9 @@ class GroupMessage():
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
         group_newcomer = cf.get('wechat', 'group_newcomer').decode('utf-8')
+        group_newcomer1 = cf.get('wechat', 'group_newcomer1').decode('utf-8')
         self.group_newcomer_list=group_newcomer.strip(',').split(',')
+        self.group_newcomer_list1=group_newcomer1.strip(',').split(',')
         self.send_time = cf.get('wechat', 'send_time').decode('utf-8')
      
         if not os.path.exists(self.path):
@@ -50,18 +55,39 @@ class GroupMessage():
 
 
         self.xiaoi = XiaoI(self.key, self.secret)
+        self.xiaoyuer = xiaoyu.XiaoY()
         
 
         self.send_me = 11
 
     def login(self):
-        self.bot = Bot(cache_path=True, console_qr=True)
+        self.bot = Bot(cache_path=True, console_qr=False)
         self.myself = self.bot.self
         self.friend = self.bot.friends().search(self.friend_name)[0]
+        self.friend_yy = self.bot.friends().search(self.friend_yy_name)[0]
         #print self.bot.friends()
-        print self.bot.groups()
+        logging.info(self.bot.groups())
         #print self.bot.mps()
        
+    def msg_from_friends(self):
+        @self.bot.register(Friend)
+        def msg_yy(msg):
+            if msg.sender.name == 'Kevin':
+                try:
+                    msg.reply('Hello')
+                except Exception as e:
+                    logging.error(e)
+            elif msg.sender.name == u'丫丫':
+                try:
+                    msg.forward(self.friend)
+                except Exception as e:
+                    logging.error(e)
+            else:
+                if msg.text == u'你好':
+                    try:
+                        msg.reply(u'你好')
+                    except Exception as e:
+                        logging.error(e)
 
     #处理公共号消息
     def my_mps(self):
@@ -90,8 +116,20 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-
-        
+    """
+    def msg_from_friend(self):
+        @self.bot.register(msg_types=FRIENDS)
+        def new_friends(msg):
+            user = msg.cad.accept()
+            if msg.text == u'北京群':
+                msg.reply('北京群')    
+                group_beijing = self.bot.groups().search(u'北京公益相亲群')[0]
+                grou_beijing.add_members(user, use_invitation=True)
+            elif msg.text == u'天津群':
+                msg.reply('天津群')    
+                group_tianjin = self.bot.groups().search(u'天津公益相亲群')[0]
+                grou_tianjin.add_members(user, use_invitation=True)
+    """
     #处理群消息
     def group_msg(self,group_n,group):
         #将中文群转化为拼音
@@ -118,24 +156,14 @@ class GroupMessage():
             #群内有被at的消息就会智能回复，支持图灵和小i机器人，默认小i
             #print msg.is_at
             #print self.use_xiaoi
-            if msg.is_at and self.use_xiaoi == 1:
+            #if msg.is_at and self.use_xiaoi == 1:
+            if msg.is_at:
                 #tuling = Tuling(api_key=self.key)
-                #tuling.do_reply(msg)
-                if u'，表情包' in msg.text:
-                    new_msg_total = msg.text.split(u'表情包')[1]
-                    #msg.reply(new_msg)
-                    pic_num = new_msg_total[0:1]
-                    if pic_num == '1':
-                        new_msg = new_msg_total[1:]
-                    else:
-                        new_msg = new_msg_total
-                    express.Make_express().make_pic(new_msg,pic_num)
-                    #msg.reply_image('material/target.jpg')
-                    msg.reply('@img@material/target.jpg')
-                    myself_text = new_msg
-                else:
-                    myself_text = self.xiaoi.do_reply(msg)
-                myword = "%s %s:%s\n" % (create_time, self.myself.name, myself_text)
+                ret_text, self.use_xiaoi = self.xiaoyuer.do_reply(msg,self.use_xiaoi)
+                if ret_text == '1' and self.use_xiaoi == 1:
+                    ret_text = self.xiaoi.do_reply(msg)
+                    #ret_text = tuling.do_reply(msg)
+                myword = "%s %s:%s\n" % (create_time, self.myself.name, ret_text)
                 
             #消息处理，TEXT文本，SHARING链接，PICTURE图片，RECORDING语音，
             #ATTACHMENT附件，NOTE红包提示，新人入群提示，MAP地图
@@ -165,14 +193,18 @@ class GroupMessage():
                 if u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
                     if group_n in self.group_newcomer_list: 
                         new_name = msg.text.split('"')[-2]
-                        #print 'Newcomer .......................'
-                        #msg.reply_image('material/newcomer.jpg')
-                    
-                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，复制如下模板修改即可。"""% (new_name)
-                        newcomer1 = '北京-90-女-医药-默默'
+                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
+                        #newcomer1 = '北京-90-女-医药-默默'
                         msg.reply(newcomer)
-                        time.sleep(2)
-                        msg.reply(newcomer1)
+                        #time.sleep(2)
+                        #msg.reply(newcomer1)
+                    elif group_n in self.group_newcomer_list1: 
+                        new_name = msg.text.split('"')[-2]
+                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
+                        #newcomer1 = '90-女-本-医药-默默'
+                        msg.reply(newcomer)
+                        #time.sleep(2)
+                        #msg.reply(newcomer1)
                     #myword = "%s %s:%s\n" % (create_time, self.myself.name, newcomer)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
@@ -219,7 +251,7 @@ class GroupMessage():
             try:
                 my_group = self.bot.groups().search(group_n)[0]
             except IndexError,e:
-                print '%s not exists, please check it!' %val
+                logging.error('%s not exists, please check it!' %val)
             #print my_group
             #print_time = time.asctime( time.localtime(time.time()) )
             #print my_group
@@ -300,7 +332,6 @@ class GroupMessage():
     def use_sche(self):
         if self.send_me == 1:
             self.send_message()
-        #schedule.every().day.at("5:00").do(self.send_message)
         #schedule.every().day.at("17:02").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
         while True:
@@ -313,30 +344,39 @@ class GroupMessage():
     
     #进入群聊接受消息 
     def run_task(self):            
+        self.msg_from_friends()
         #my_groups = []
         for i,val in enumerate(self.group_list):
-            print val
+            #print val
+            logging.info(val)
             try:
                 my_group = self.bot.groups().search(val)[0]
                 self.group_msg(self.group_list[i],my_group)
             except IndexError,e:
-                print '%s not exists, please check it!' %val
+                logging.error('%s not exists, please check it!' %val)
+        
+        while True:
+            if not self.bot.alive:
+                logging.info('not login')
+                self.main()
+            time.sleep(10)
+        
         embed()
         #self.bot.join()
             
     def main(self):
         self.login()
         #threads = []
-        t1 = threading.Thread(target=self.run_task,args=())
-        t1.setDaemon(True)
-        t1.start()
         if self.recev_mps == 1:
-            t2 = threading.Thread(target=self.my_mps,args=())
-            t2.setDaemon(True)
-            t2.start()
+            t1 = threading.Thread(target=self.my_mps,args=())
+            t1.setDaemon(True)
+            t1.start()
 
-        t3 = threading.Thread(target=self.use_sche(),args=())
+        #t3 = threading.Thread(target=self.use_sche(),args=())
         #t3.setDaemon(True)
+        #t3.start()
+        t3 = threading.Thread(target=self.run_task(),args=())
+        t3.setDaemon(True)
         t3.start()
 
         #embed()
