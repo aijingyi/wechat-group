@@ -18,6 +18,7 @@ from init import analyze
 #from init import express
 from init import logger
 from init import xiaoyu
+from init import jianbao
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -39,8 +40,11 @@ class GroupMessage():
         self.key = cf.get('wechat','key')
         self.secret = cf.get('wechat','secret')
     
+        #self.jb_content = ''
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
+        group_jianbao = cf.get('wechat', 'group_jianbao').decode('utf-8')
+        self.group_jianbao_list=group_jianbao.strip(',').split(',')
         group_newcomer = cf.get('wechat', 'group_newcomer').decode('utf-8')
         group_newcomer1 = cf.get('wechat', 'group_newcomer1').decode('utf-8')
         self.group_newcomer_list=group_newcomer.strip(',').split(',')
@@ -74,7 +78,9 @@ class GroupMessage():
         def msg_yy(msg):
             if msg.sender.name == 'Kevin':
                 try:
-                    msg.reply('Hello')
+                    send_kevin =12
+                    if send_kevin == 1:
+                        msg.reply('Hello')
                 except Exception as e:
                     logging.error(e)
             elif msg.sender.name == u'丫丫':
@@ -96,16 +102,18 @@ class GroupMessage():
             #print msg
             #print dir(msg)
             self.friend.send(msg)
+            #self.friend.send_raw_msg( raw_content=msg.raw)
             #msg.forward(self.friend)
             if msg.type == SHARING and msg.sender.name == '爱净意':
                 for article in msg.articles:
-                    if '妹子篇' in article.title:
-                        #article.forward(self.friend)
+                    if '第壹简报' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-                    if  '妹子' in article.title and '现居北京' in article.title:
-                        self.friend.send(article.title)
-                        self.friend.send(article.url)
+                        #article_url = 'https://mp.weixin.qq.com/s/5E_SGRmaDA9O1nZgjGG0mw'
+                        jb = jianbao.Get_Jianbao(article.url)
+                        jb_content = jb.out_jianbao()
+                        logging.info(jb_content)
+                        self.friend.send(jb_content)
             if msg.type == SHARING and msg.sender.name == '硕士博士俱乐部':
                 for article in msg.articles:
                     if '妹子篇' in article.title:
@@ -116,6 +124,24 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
+            if msg.type == SHARING and msg.sender.name == '第壹简报':
+                for article in msg.articles:
+                    if '第壹简报' in article.title:
+                        self.friend.send(article.title)
+                        self.friend.send(article.url)
+                        jb = jianbao.Get_Jianbao(article.url)
+                        jb_content = jb.out_jianbao()
+                        self.jb_content = jb_content
+                        self.friend.send(jb_content)
+
+                        for group_n in self.group_jianbao_list:
+                            try:
+                                my_group = self.bot.groups().search(group_n)[0]
+                                my_group.send(jb_content)
+                            except IndexError,e:
+                                logging.error('%s not exists, please check it!' %val)
+
+
     """
     def msg_from_friend(self):
         @self.bot.register(msg_types=FRIENDS)
@@ -194,18 +220,21 @@ class GroupMessage():
                     if group_n in self.group_newcomer_list: 
                         new_name = msg.text.split('"')[-2]
                         newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
-                        #newcomer1 = '北京-90-女-医药-默默'
                         msg.reply(newcomer)
-                        #time.sleep(2)
-                        #msg.reply(newcomer1)
                     elif group_n in self.group_newcomer_list1: 
                         new_name = msg.text.split('"')[-2]
                         newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
-                        #newcomer1 = '90-女-本-医药-默默'
                         msg.reply(newcomer)
-                        #time.sleep(2)
-                        #msg.reply(newcomer1)
                     #myword = "%s %s:%s\n" % (create_time, self.myself.name, newcomer)
+                if u'\u626b\u63cf' in msg.text and self.newcomer == '1':
+                    if group_n in self.group_newcomer_list: 
+                        new_name = msg.text.split('"')[0]
+                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
+                        msg.reply(newcomer)
+                    elif group_n in self.group_newcomer_list1: 
+                        new_name = msg.text.split('"')[0]
+                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
+                        msg.reply(newcomer)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
                     self.friend.send('Red Package:%s' %(group_n))
@@ -318,6 +347,7 @@ class GroupMessage():
                 my_group.send('早上好！')
                 word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
                 self.log_message(group_zh_name, word)
+                """
                 for group_num in [member_word, talks_total]:
                     time.sleep(2)
                     my_group.send(group_num)
@@ -327,7 +357,7 @@ class GroupMessage():
                 #self.log_message(group_zh_name, word)
                 word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
                 self.log_message(group_zh_name, word)
-
+                """
     #使用schedule模块执行定时任务
     def use_sche(self):
         if self.send_me == 1:
@@ -372,12 +402,12 @@ class GroupMessage():
             t1.setDaemon(True)
             t1.start()
 
-        #t3 = threading.Thread(target=self.use_sche(),args=())
-        #t3.setDaemon(True)
-        #t3.start()
+        t2 = threading.Thread(target=self.use_sche(),args=())
+        t2.setDaemon(True)
+        t2.start()
         t3 = threading.Thread(target=self.run_task(),args=())
-        t3.setDaemon(True)
-        t3.start()
+        t4.setDaemon(True)
+        t5.start()
 
         #embed()
 
