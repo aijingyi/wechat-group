@@ -148,6 +148,8 @@ class XiaoY(object):
             text = '长得丑，想的美，说的就说你。'
         elif u'什么时候脱单' in question:
             text = '他来了缘聚，他走了缘散，你找他缘起，你不找他了缘灭。'
+        elif u'双十一怎么过' in question:
+            text = '买买买。。'
         elif question.startswith(u'表情包'):
             new_msg_total = question.split(u'表情包')[1]
             #msg.reply(new_msg)
