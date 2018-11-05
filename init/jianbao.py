@@ -12,6 +12,7 @@ class Get_Jianbao():
     def get_html(self):
         response = urllib2.urlopen(self.jianbao_url)
         html = response.read()
+        #print html
         return html
     def out_jianbao(self):
         soup = BeautifulSoup(self.get_html(), "html.parser")
@@ -26,7 +27,10 @@ class Get_Jianbao():
         for cont in js_p:
             for st in cont.stripped_strings:
                 content = content + st + '\n' 
-        lines =content.replace(u'(公众号:第壹简报)', '').replace('\n\n','\n').split("\n")[0:14]
+        #lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n').split("\n")[13:-1]
+        lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n')\
+.replace('12\n','12').replace('2\n','2').split("\n")[13:-1]
+        #print lines
         out_content = ''
         for line in lines:
             if not out_content:
@@ -37,9 +41,10 @@ class Get_Jianbao():
 
 
 if __name__ == '__main__':
-    #jianbao_url = 'https://mp.weixin.qq.com/s/5E_SGRmaDA9O1nZgjGG0mw'
-    #jianbao_url = 'http://mp.weixin.qq.com/s?__biz=MzA4NjU4ODY0Mg==&mid=2247485085&idx=1&sn=b58b653ff2c6d685f2964687d90a7b35&chksm=9fc72b10a8b0a206605854cefeaaa9f9568c996c4e2affdf01aa9c6ab261710488a14f0179f0&scene=0#rd'
-    jianbao_url = 'http://mp.weixin.qq.com/s?__biz=MzA4NjU4ODY0Mg==&mid=2247485089&idx=1&sn=ab5db64bd61b90166b8f962c0eede624&chksm=9fc72b2ca8b0a23a94b14a6bc53a254a76c69b38aef469264bacb1f8109cfa82276e169a1fe6&scene=0#rd'
-    jb = Get_Jianbao(jianbao_url)
-    content = jb.out_jianbao()
-    print content
+    jianbao = []
+    jianbao.append('https://mp.weixin.qq.com/s/QfRSelJSNkHa6la9rIphDA')
+    #jianbao.append('https://mp.weixin.qq.com/s/kKyIag0b5Eov3Tp3HSFkbw')
+    for jianbao_url in jianbao:
+        jb = Get_Jianbao(jianbao_url)
+        content = jb.out_jianbao()
+        print content
