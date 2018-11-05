@@ -124,15 +124,15 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-            if msg.type == SHARING and msg.sender.name == '第壹简报':
+            if msg.type == SHARING and msg.sender.name == '简报微刊':
                 for article in msg.articles:
-                    if '第壹简报' in article.title:
-                        self.friend.send(article.title)
-                        self.friend.send(article.url)
+                    if '简报微刊' in article.title:
+                        #self.friend.send(article.title)
+                        #self.friend.send(article.url)
                         jb = jianbao.Get_Jianbao(article.url)
                         jb_content = jb.out_jianbao()
                         self.jb_content = jb_content
-                        self.friend.send(jb_content)
+                        #self.friend.send(jb_content)
 
                         for group_n in self.group_jianbao_list:
                             try:
@@ -142,11 +142,16 @@ class GroupMessage():
                                 logging.error('%s not exists, please check it!' %val)
 
 
-    """
-    def msg_from_friend(self):
+    
+    def msg_from_friends_accept(self):
         @self.bot.register(msg_types=FRIENDS)
-        def new_friends(msg):
-            user = msg.cad.accept()
+        def auto_accept_friends(msg):
+            logging.info("enter accept")
+            new_friend = bot.accept_friend(msg.card)
+            new_friend.send('哈哈，我自动接受了你的好友请求')
+            logging.info("after accept")
+            """
+            user = msg.card.accept()
             if msg.text == u'北京群':
                 msg.reply('北京群')    
                 group_beijing = self.bot.groups().search(u'北京公益相亲群')[0]
@@ -155,7 +160,7 @@ class GroupMessage():
                 msg.reply('天津群')    
                 group_tianjin = self.bot.groups().search(u'天津公益相亲群')[0]
                 grou_tianjin.add_members(user, use_invitation=True)
-    """
+            """
     #处理群消息
     def group_msg(self,group_n,group):
         #将中文群转化为拼音
@@ -228,11 +233,11 @@ class GroupMessage():
                     #myword = "%s %s:%s\n" % (create_time, self.myself.name, newcomer)
                 if u'\u626b\u63cf' in msg.text and self.newcomer == '1':
                     if group_n in self.group_newcomer_list: 
-                        new_name = msg.text.split('"')[0]
+                        new_name = msg.text.split('"')[1]
                         newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
                         msg.reply(newcomer)
                     elif group_n in self.group_newcomer_list1: 
-                        new_name = msg.text.split('"')[0]
+                        new_name = msg.text.split('"')[1]
                         newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
                         msg.reply(newcomer)
                 if u'\u6536\u5230' in msg.text:
@@ -362,8 +367,9 @@ class GroupMessage():
     def use_sche(self):
         if self.send_me == 1:
             self.send_message()
-        #schedule.every().day.at("17:02").do(self.send_message)
+        #schedule.every().day.at("17:17").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
+        
         while True:
             #self.myself.send('log out')
             if not self.bot.alive:
@@ -371,10 +377,12 @@ class GroupMessage():
                 self.main()
             schedule.run_pending()
             time.sleep(10)
-    
+        
+
     #进入群聊接受消息 
     def run_task(self):            
         self.msg_from_friends()
+        self.msg_from_friends_accept()
         #my_groups = []
         for i,val in enumerate(self.group_list):
             #print val
@@ -402,12 +410,12 @@ class GroupMessage():
             t1.setDaemon(True)
             t1.start()
 
-        t2 = threading.Thread(target=self.use_sche(),args=())
+        t2 = threading.Thread(target=self.use_sche,args=())
         t2.setDaemon(True)
         t2.start()
         t3 = threading.Thread(target=self.run_task(),args=())
-        t4.setDaemon(True)
-        t5.start()
+        t3.setDaemon(True)
+        t3.start()
 
         #embed()
 
