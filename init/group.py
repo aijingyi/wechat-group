@@ -33,7 +33,6 @@ class GroupMessage():
         group_names = cf.get('wechat', 'group_name').decode('utf-8')
         self.group_list=group_names.strip(',').split(',')
         self.friend_name = cf.get('wechat','friends').decode('utf-8')
-        self.friend_yy_name = cf.get('wechat','friends_yy').decode('utf-8')
         self.newcomer = cf.get('wechat','newcomer')
         self.recev_mps = int(cf.get('wechat','recev_mps'))
         self.use_xiaoi = int(cf.get('wechat','xiaoi'))
@@ -50,6 +49,7 @@ class GroupMessage():
         self.group_newcomer_list=group_newcomer.strip(',').split(',')
         self.group_newcomer_list1=group_newcomer1.strip(',').split(',')
         self.send_time = cf.get('wechat', 'send_time').decode('utf-8')
+        self.send_talks = cf.get('wechat', 'send_talks').decode('utf-8')
      
         if not os.path.exists(self.path):
             os.mkdir(self.path)
@@ -68,7 +68,6 @@ class GroupMessage():
         self.bot = Bot(cache_path=True, console_qr=False)
         self.myself = self.bot.self
         self.friend = self.bot.friends().search(self.friend_name)[0]
-        self.friend_yy = self.bot.friends().search(self.friend_yy_name)[0]
         #print self.bot.friends()
         logging.info(self.bot.groups())
         #print self.bot.mps()
@@ -81,11 +80,6 @@ class GroupMessage():
                     send_kevin =12
                     if send_kevin == 1:
                         msg.reply('Hello')
-                except Exception as e:
-                    logging.error(e)
-            elif msg.sender.name == u'丫丫':
-                try:
-                    msg.forward(self.friend)
                 except Exception as e:
                     logging.error(e)
             else:
@@ -352,17 +346,17 @@ class GroupMessage():
                 my_group.send('早上好！')
                 word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
                 self.log_message(group_zh_name, word)
-                """
-                for group_num in [member_word, talks_total]:
-                    time.sleep(2)
-                    my_group.send(group_num)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
-                self.log_message(group_zh_name, word)
-                #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
-                #self.log_message(group_zh_name, word)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
-                self.log_message(group_zh_name, word)
-                """
+                if self.send_talks == "1":
+                    for group_num in [member_word, talks_total]:
+                        time.sleep(2)
+                        my_group.send(group_num)
+                    word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
+                    self.log_message(group_zh_name, word)
+                    #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
+                    #self.log_message(group_zh_name, word)
+                    word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
+                    self.log_message(group_zh_name, word)
+                
     #使用schedule模块执行定时任务
     def use_sche(self):
         if self.send_me == 1:
