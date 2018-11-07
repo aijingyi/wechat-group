@@ -22,6 +22,8 @@ from init import jianbao
 
 reload(sys)
 sys.setdefaultencoding('utf8')
+if not os.path.exists('log'):
+    os.mkdir('log')
 logging = logger.WriteLog()
 
 class GroupMessage():
