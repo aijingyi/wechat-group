@@ -26,13 +26,14 @@ class XiaoY(object):
 
     # noinspection SpellCheckingInspection
     def __init__(self):
-        """
-        | 需要通过注册获得 key 和 secret
-        | 免费申请: http://cloud.xiaoi.com/
 
-        :param key: 你申请的 key
-        :param secret: 你申请的 secret
-        """
+        self.group_role = '''群规：
+1. 文明聊天，真诚交友；\n2. 禁止广告、砍价、支付宝红包等信息；
+3. 禁止淫秽图片视频等内容；\n4.禁止不明二维码（包括拉人入群二维码），不明链接。
+5. 欢迎举报私下聊天下流、骗色、骗钱、推销产品等行为的人。
+6. 欢迎推荐好友入群聊天交友。
+7. 欢迎联系群主或管理员，提出宝贵意见。
+违反群规者将视情况而定给予警告或踢出群的决定。'''
 
         #self.key = key
         #self.secret = secret
@@ -137,11 +138,12 @@ class XiaoY(object):
         }
         if question == u'功能' or question == u'菜单' or question == u'你会什么':
             text = '聊天：任意语句\n查询天气：城市名+天气\n讲笑话：讲个笑话\n\
-计算器：678*3455\n查询火车票：北京到天津火车票\n查询星座：星座+运势;7月1日是什么星座\n\
-表情包：表情包+文字；表情包1+文字\n心理测试：心理测试\n成语接龙：成语接龙\n\
+计算器：678*3455\n查询火车票：北京到天津火车票\n查询星座：星座+运势;7月1日是什么星座\n心理测试：心理测试\n成语接龙：成语接龙\n\
 玩游戏：逃出房间；恐怖医院；一站到底\n手机号运势查询：手机号后四位+手机号运势'
         elif question == u'你好' or question == u'您好':
             text = '你好，很高兴认识你。'
+        elif question == u'群规' or question == u'群规是什么':
+            text = self.group_role
         elif u'主人是谁' in question:
             text = '我的主人是Kevin。'
         elif u'送我一个男盆友' in question or u'送我一个男朋友' in question:
