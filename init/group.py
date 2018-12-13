@@ -29,6 +29,7 @@ logging = logger.WriteLog()
 class GroupMessage():
     #从配置文件获取参数，初始化变量
     def __init__(self):
+        self.log_flag = 0
         cf = ConfigParser.ConfigParser()
         cf.read('config/wechat.conf')
         self.path = cf.get('wechat', 'path')
@@ -41,6 +42,10 @@ class GroupMessage():
         self.key = cf.get('wechat','key')
         self.secret = cf.get('wechat','secret')
     
+        self.send_msg = u'早上好'
+        self.send_night = u'晚安哦'
+        #self.send_msg = u'好的，赶紧休息吧'
+        self.friend_chuxin = u'陌初心'
         #self.jb_content = ''
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
@@ -64,19 +69,41 @@ class GroupMessage():
         self.xiaoyuer = xiaoyu.XiaoY()
         
 
-        self.send_me = 11
+        self.send_me = 1
 
     def login(self):
-        self.bot = Bot(cache_path=True, console_qr=False)
+        self.bot = Bot(cache_path=True, console_qr=True)
         self.myself = self.bot.self
         self.friend = self.bot.friends().search(self.friend_name)[0]
         #print self.bot.friends()
         logging.info(self.bot.groups())
         #print self.bot.mps()
-       
+    def send_friend_msg(self,send_friend,send_msg):
+        logging.info(send_friend)
+        self.friend_chuxin = self.bot.friends().search(send_friend)[0]
+        self.friend_chuxin.send(send_msg)
+    def send_kevin_msg(self):
+        now_time = time.asctime( time.localtime(time.time()) )
+        self.kevin_m = self.bot.friends().search('Kevin')[0]
+        self.kevin_m.send(now_time)
+
     def msg_from_friends(self):
         @self.bot.register(Friend)
         def msg_yy(msg):
+            """
+            微信web版无法邀请好友入群
+            if msg.text == u'北京':
+                msg.reply('缘来是你北京交流群')    
+                new_friend = self.bot.friends().search(msg.sender.name)[0]
+                group_beijing = self.bot.groups().search(u'北京交流群')[0]
+                group_beijing.add_members(new_friend, use_invitation=True)
+            elif msg.text == u'小群':
+                msg.reply('北京小群')    
+                group_tianjin = self.bot.groups().search(u'人工智能体验群')[0]
+                new_friend = self.bot.friends().search(msg.sender.name)[0]
+                self.friend.send(new_friend)
+                group_tianjin.add_members(new_friend, use_invitation=True)
+            """
             if msg.sender.name == 'Kevin':
                 try:
                     send_kevin =12
@@ -97,7 +124,7 @@ class GroupMessage():
         def print_mp_msg(msg):
             #print msg
             #print dir(msg)
-            self.friend.send(msg)
+            #self.friend.send(msg)
             #self.friend.send_raw_msg( raw_content=msg.raw)
             #msg.forward(self.friend)
             if msg.type == SHARING and msg.sender.name == '爱净意':
@@ -120,9 +147,9 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-            if msg.type == SHARING and msg.sender.name == '简报微刊':
+            if msg.type == SHARING and msg.sender.name == '第壹简报':
                 for article in msg.articles:
-                    if '简报微刊' in article.title:
+                    if '第壹简报' in article.title:
                         #self.friend.send(article.title)
                         #self.friend.send(article.url)
                         jb = jianbao.Get_Jianbao(article.url)
@@ -143,20 +170,12 @@ class GroupMessage():
         @self.bot.register(msg_types=FRIENDS)
         def auto_accept_friends(msg):
             logging.info("enter accept")
-            new_friend = bot.accept_friend(msg.card)
-            new_friend.send('哈哈，我自动接受了你的好友请求')
+            #new_friend = self.bot.accept_friend(msg.card)
+            new_friend = msg.card.accept()
+            new_friend.send('你好，欢迎加入北京交友群，此群用于聊天交友，不要发布支付宝红包、广告、砍价等信息哦。同意进群请回复"是"')
             logging.info("after accept")
-            """
-            user = msg.card.accept()
-            if msg.text == u'北京群':
-                msg.reply('北京群')    
-                group_beijing = self.bot.groups().search(u'北京公益相亲群')[0]
-                grou_beijing.add_members(user, use_invitation=True)
-            elif msg.text == u'天津群':
-                msg.reply('天津群')    
-                group_tianjin = self.bot.groups().search(u'天津公益相亲群')[0]
-                grou_tianjin.add_members(user, use_invitation=True)
-            """
+            
+            
     #处理群消息
     def group_msg(self,group_n,group):
         #将中文群转化为拼音
@@ -217,28 +236,32 @@ class GroupMessage():
                     msg.get_file('%s/%s-%s-%s' % (pic_file,ct,name,msg.file_name))
                     word = "%s %s:ATTACHMENT:%s\n" % (create_time, name, msg.file_name)
             elif msg.type == NOTE:
-                if u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
-                    if group_n in self.group_newcomer_list: 
-                        new_name = msg.text.split('"')[-2]
-                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
-                        msg.reply(newcomer)
-                    elif group_n in self.group_newcomer_list1: 
-                        new_name = msg.text.split('"')[-2]
-                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
-                        msg.reply(newcomer)
-                    #myword = "%s %s:%s\n" % (create_time, self.myself.name, newcomer)
-                if u'\u626b\u63cf' in msg.text and self.newcomer == '1':
-                    if group_n in self.group_newcomer_list: 
-                        new_name = msg.text.split('"')[1]
-                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：城市-出生年-性别-读书（工作）-姓名，如：\n北京-90-女-医药-默默"""% (new_name)
-                        msg.reply(newcomer)
-                    elif group_n in self.group_newcomer_list1: 
-                        new_name = msg.text.split('"')[1]
-                        newcomer = """@%s 欢迎新人进入本群，请文明聊天。\n进群请修改备注：出生年-性别-学历-工作-姓名，如：\n90-女-本-医药-默默"""% (new_name)
-                        msg.reply(newcomer)
+                #self.friend.send(msg.text)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
                     self.friend.send('Red Package:%s' %(group_n))
+                elif u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
+                    if group_n in self.group_newcomer_list: 
+                        new_name = msg.text.split('"')[-2]
+                        new_name_1 = None
+                    elif group_n in self.group_newcomer_list1: 
+                        #self.friend.send(self.group_newcomer_list1)
+                        new_name_1 = msg.text.split('"')[-2]
+                        new_name = None
+                elif u'\u626b\u63cf' in msg.text and self.newcomer == '1':
+                    if group_n in self.group_newcomer_list: 
+                        new_name = msg.text.split('"')[1]
+                        new_name_1 = None
+                    elif group_n in self.group_newcomer_list1: 
+                        new_name = None
+                        new_name_1 = msg.text.split('"')[1]
+                
+                if new_name:
+                    newcomer_msg = """@%s 欢迎新人进群交友聊天，请详细阅读群公告。\n进群请修改备注：昵称-出生年-性别-职业（学生）-学历，如：\n默默-90-女-医药-硕士"""% (new_name)
+                    msg.reply(newcomer_msg)
+                elif new_name_1:
+                    newcomer_msg_1 = """@%s 欢迎新人进群交友聊天，本群是跳转群，请加我好友拉你进大群。"""% (new_name_1)
+                    msg.reply(newcomer_msg_1)
                 word = "%s %s:NOTE:%s\n" % (create_time, name, msg.text)
             elif msg.type == CARD:
                 word = "%s %s:CARD:%s\n" % (create_time, name, msg.text)
@@ -281,7 +304,8 @@ class GroupMessage():
             try:
                 my_group = self.bot.groups().search(group_n)[0]
             except IndexError,e:
-                logging.error('%s not exists, please check it!' %val)
+                logging.error('%s not exists, please check it!' %group_n)
+                break
             #print my_group
             #print_time = time.asctime( time.localtime(time.time()) )
             #print my_group
@@ -294,7 +318,7 @@ class GroupMessage():
             group_zh_name  = group_zh.get_pinyin(group_n)
             members_list = []
             for members in my_group:
-                members_list.append(members.name)
+                members_list.append(members.nick_name)
             analyze.GroupLog(group_zh_name,self.path).log_members(members_list)
             members_l = analyze.GroupLog(group_zh_name,self.path).output_members()
             #print members_list
@@ -315,8 +339,8 @@ class GroupMessage():
                 if out_nums == 0:
                     out_word = '没有人离开。'
                 else:
-                    #out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
-                    out_word = '有%s人离开了。' %(out_nums)
+                    out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
+                    #out_word = '有%s人离开了。' %(out_nums)
                    
                 if in_nums == 0:
                     in_word = '没有人进来，'
@@ -341,11 +365,11 @@ class GroupMessage():
                 for me_num in [member_word, talks_total]:
                     self.friend.send(me_num)
               
-            else:
+            elif self.send_me ==11:
                 #my_group.send(group_mem_stats)
                 create_time = time.strftime('%Y-%m-%d %H:%M:%S')
                 #my_group.send_image('material/zaoan.png')
-                my_group.send('早上好！')
+                #my_group.send('早上好！')
                 word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
                 self.log_message(group_zh_name, word)
                 if self.send_talks == "1":
@@ -361,43 +385,70 @@ class GroupMessage():
                 
     #使用schedule模块执行定时任务
     def use_sche(self):
-        if self.send_me == 1:
-            self.send_message()
+        #if self.send_me == 1:
+        #self.send_message()
         #schedule.every().day.at("17:17").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
+        schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
+        #schedule.every().day.at("18:58").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
+        schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
+        logging.info("send_kevin_msg")
+        #schedule.every(1).minutes.do(self.send_kevin_msg)
         
         while True:
             #self.myself.send('log out')
             if not self.bot.alive:
-                print 'not login'
+                logging.error('not login')
                 self.main()
+                break
             schedule.run_pending()
             time.sleep(10)
         
 
     #进入群聊接受消息 
     def run_task(self):            
-        self.msg_from_friends()
         self.msg_from_friends_accept()
+        self.msg_from_friends()
         #my_groups = []
         for i,val in enumerate(self.group_list):
             #print val
             logging.info(val)
             try:
-                my_group = self.bot.groups().search(val)[0]
+                #self.bot.groups().update_group(members_details=False)
+                my_group = self.bot.groups(update=True).search(val)[0]
+                #my_group = self.bot.groups().search(val)[0]
                 self.group_msg(self.group_list[i],my_group)
             except IndexError,e:
                 logging.error('%s not exists, please check it!' %val)
         
-        while True:
-            if not self.bot.alive:
-                logging.info('not login')
-                self.main()
-            time.sleep(10)
+        #while True:
+         #   if not self.bot.alive:
+          #      logging.info('not login')
+           #     self.main()
+            #    break
+            #time.sleep(10)
         
-        embed()
-        #self.bot.join()
+        #embed()
+        self.bot.join()
             
+    def main_dd(self):
+        self.login()
+        #threads = []
+        logging.info(self.log_flag)
+        if self.log_flag == 0:
+            if self.recev_mps == 1:
+                t1 = threading.Thread(target=self.my_mps,args=())
+                t1.setDaemon(True)
+                t1.start()
+            t2 = threading.Thread(target=self.use_sche,args=())
+            t2.setDaemon(True)
+            t2.start()
+            logging.info(dir(t2))
+            t3 = threading.Thread(target=self.run_task(),args=())
+            t3.setDaemon(True)
+            t3.start()
+        self.log_flag = 1
+        #embed()
     def main(self):
         self.login()
         #threads = []
@@ -407,13 +458,11 @@ class GroupMessage():
             t1.start()
 
         t2 = threading.Thread(target=self.use_sche,args=())
-        t2.setDaemon(True)
+        #t2.setDaemon(True)
         t2.start()
-        t3 = threading.Thread(target=self.run_task(),args=())
-        t3.setDaemon(True)
+        t3 = threading.Thread(target=self.run_task,args=())
+        #t3.setDaemon(True)
         t3.start()
-
-        #embed()
 
 if __name__ == "__main__":
     group_m = GroupMessage()
