@@ -7,7 +7,7 @@ echo $PID
 
 start_soft()
 {
-    python run.py &>log/wechat.log &
+    python ~/test/pytest/wechat-group/run.py &>log/wechat.log &
 }
 
 stop_soft()
