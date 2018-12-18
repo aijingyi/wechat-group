@@ -105,9 +105,9 @@ class XiaoY(object):
         ret,use_xiaoi = self.reply_text(msg,use_xiaoi)
         #ret = '尊敬的用户，您好。由于近期有人举报机器人扰乱群秩序，\
         #所以正在接受整顿，功能恢复日期待定。大家有意见可以提出来。'
-        if ret == 'express_pic':     
-            msg.reply('@img@material/target.jpg')
-        elif ret != '1' and use_xiaoi == 1: 
+        #if ret == 'express_pic':     
+         #   msg.reply('@img@material/target.jpg')
+        if ret != '1' and use_xiaoi == 1: 
             msg.reply(ret)
         return ret,use_xiaoi
 
@@ -152,6 +152,9 @@ class XiaoY(object):
             text = '他来了缘聚，他走了缘散，你找他缘起，你不找他了缘灭。'
         elif u'双十一怎么过' in question:
             text = '买买买。。'
+        elif u'群统计' in question or u'男女比例' in question:
+            msg.sender.update_group(True)
+            text = msg.sender.members.stats_text()
         elif question.startswith(u'表情包'):
             new_msg_total = question.split(u'表情包')[1]
             #msg.reply(new_msg)
