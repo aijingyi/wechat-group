@@ -198,7 +198,8 @@ class GroupMessage():
                 os.mkdir(pic_file)
     
             create_time = msg.create_time.strftime('%Y-%m-%d %H:%M:%S')
-            name = msg.member.name
+            #name = msg.member.name
+            name = msg.member.nick_name
             #群内有被at的消息就会智能回复，支持图灵和小i机器人，默认小i
             #print msg.is_at
             #print self.use_xiaoi
@@ -223,7 +224,7 @@ class GroupMessage():
                 ct = msg.create_time.strftime('%Y-%m-%d-%H-%M-%S')
                 if msg.type == PICTURE:
                     #print msg.raw
-                    msg.get_file('%s/%s-%s' % (pic_file,ct,msg.file_name))
+                    msg.get_file('%s/%s-%s-%s' % (pic_file,ct,name,msg.file_name))
                     word = "%s %s:PICTURE:%s\n" % (create_time, name, msg.file_name)
                 #elif msg.type == VIDEO:
                  #  msg.get_file('%s/%s-%s-%s' % (file_name,ct,name,msg.file_name))
@@ -236,7 +237,7 @@ class GroupMessage():
                     msg.get_file('%s/%s-%s-%s' % (pic_file,ct,name,msg.file_name))
                     word = "%s %s:ATTACHMENT:%s\n" % (create_time, name, msg.file_name)
             elif msg.type == NOTE:
-                #self.friend.send(msg.text)
+                #self.friend.send(word)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
                     self.friend.send('Red Package:%s' %(group_n))
@@ -255,6 +256,8 @@ class GroupMessage():
                     elif group_n in self.group_newcomer_list1: 
                         new_name = None
                         new_name_1 = msg.text.split('"')[1]
+                else:
+                    new_name = new_name_1 = None
                 
                 if new_name:
                     newcomer_msg = """@%s 欢迎新人进群交友聊天，请详细阅读群公告。\n进群请修改备注：昵称-出生年-性别-职业（学生）-学历，如：\n默默-90-女-医药-硕士"""% (new_name)
@@ -407,7 +410,7 @@ class GroupMessage():
 
     #进入群聊接受消息 
     def run_task(self):            
-        self.msg_from_friends_accept()
+        #self.msg_from_friends_accept()
         self.msg_from_friends()
         #my_groups = []
         for i,val in enumerate(self.group_list):
