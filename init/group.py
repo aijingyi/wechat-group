@@ -73,6 +73,7 @@ class GroupMessage():
 
     def login(self):
         self.bot = Bot(cache_path=True, console_qr=True)
+        self.bot.enable_puid()
         self.myself = self.bot.self
         self.friend = self.bot.friends().search(self.friend_name)[0]
         #print self.bot.friends()
@@ -392,9 +393,9 @@ class GroupMessage():
         #self.send_message()
         #schedule.every().day.at("17:17").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
-        schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
+        #schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
         #schedule.every().day.at("18:58").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
-        schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
+        #schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
         logging.info("send_kevin_msg")
         #schedule.every(1).minutes.do(self.send_kevin_msg)
         
@@ -421,6 +422,7 @@ class GroupMessage():
                 my_group = self.bot.groups(update=True).search(val)[0]
                 #my_group = self.bot.groups().search(val)[0]
                 self.group_msg(self.group_list[i],my_group)
+                logging.info(my_group.puid)
             except IndexError,e:
                 logging.error('%s not exists, please check it!' %val)
         
@@ -434,24 +436,6 @@ class GroupMessage():
         #embed()
         self.bot.join()
             
-    def main_dd(self):
-        self.login()
-        #threads = []
-        logging.info(self.log_flag)
-        if self.log_flag == 0:
-            if self.recev_mps == 1:
-                t1 = threading.Thread(target=self.my_mps,args=())
-                t1.setDaemon(True)
-                t1.start()
-            t2 = threading.Thread(target=self.use_sche,args=())
-            t2.setDaemon(True)
-            t2.start()
-            logging.info(dir(t2))
-            t3 = threading.Thread(target=self.run_task(),args=())
-            t3.setDaemon(True)
-            t3.start()
-        self.log_flag = 1
-        #embed()
     def main(self):
         self.login()
         #threads = []

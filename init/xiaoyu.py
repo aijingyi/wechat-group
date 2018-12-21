@@ -152,6 +152,24 @@ class XiaoY(object):
             text = '他来了缘聚，他走了缘散，你找他缘起，你不找他了缘灭。'
         elif u'双十一怎么过' in question:
             text = '买买买。。'
+        elif u'和谁跨年' in question:
+            text = '当然是我喜欢的人呀'
+        elif u'你喜欢谁' in question:
+            text = '我喜欢小姐姐啦，哈哈~~~'
+        elif u'我爱你' in question and msg.member.nick_name == u'沐沐':
+            text = '我也爱你哦，小姐姐，nua~'
+        elif u'我喜欢你' in question and msg.member.nick_name == u'沐沐':
+            text = '我也喜欢你哦，小姐姐，nua~'
+        elif u'我想你了' in question and msg.member.nick_name == u'沐沐':
+            text = '彼此彼此啦，嘿嘿，nua~'
+        elif u'啥时脱单' in question:
+            text = '缘分到了就脱单啦！'
+        elif u'叫他出来' in question and u'你主人出来' in question:
+            text = '你自己不会叫啊'
+        elif u'最帅' in question:
+            text = '还用问么，当然我主人啦，哈哈哈'
+        elif u'最美' in question and u'最漂亮' in question:
+            text = '是超级无敌可爱沐沐小姐姐哦，哈哈哈'
         elif u'群统计' in question or u'男女比例' in question:
             msg.sender.update_group(True)
             text = msg.sender.members.stats_text()
@@ -167,13 +185,13 @@ class XiaoY(object):
             #msg.reply_image('material/target.jpg')
             text = 'express_pic'
         elif question == u'小鱼儿休息' or question == u'小鱼儿休息一下吧':
-            if msg.member.name == 'Kevin':
+            if msg.member.nick_name == 'Kevin':
                 use_xiaoi = 0
                 text = '好的'
             else:
                 text = u'我只听主人的哦。'
         elif question == u'小鱼儿干活' or question == u'小鱼儿起来干活':
-            if msg.member.name == 'Kevin':
+            if msg.member.nick_name == 'Kevin':
                 use_xiaoi = 1
                 text = '好的'
             else:
