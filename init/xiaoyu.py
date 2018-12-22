@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 from wxpy.compatible import *
 
 from init import express
+from init import analyze
 
 class XiaoY(object):
     """
@@ -35,9 +36,9 @@ class XiaoY(object):
 7. 欢迎联系群主或管理员，提出宝贵意见。
 违反群规者将视情况而定给予警告或踢出群的决定。'''
 
-        #self.key = key
+        self.log_dir = 'log'
         #self.secret = secret
-
+        self.egg = '''KISS：xoxo，么么哒，cium，baci，besos\n星星：miss u，想你了\n蛋糕： birthday，生日快乐'''
         #self.realm = "xiaoi.com"
         #self.http_method = "POST"
         #self.uri = "/ask.do"
@@ -142,6 +143,8 @@ class XiaoY(object):
 玩游戏：逃出房间；恐怖医院；一站到底\n手机号运势查询：手机号后四位+手机号运势'
         elif question == u'你好' or question == u'您好':
             text = '你好，很高兴认识你。'
+        elif question == u'彩蛋' or question == u'egg':
+            text = self.egg
         elif question == u'群规' or question == u'群规是什么':
             text = self.group_role
         elif u'主人是谁' in question:
@@ -173,6 +176,10 @@ class XiaoY(object):
         elif u'群统计' in question or u'男女比例' in question:
             msg.sender.update_group(True)
             text = msg.sender.members.stats_text()
+        elif u'发言频率' in question or u'聊天排行榜' in question:
+            grouplog = analyze.GroupLog(msg.sender.puid,self.log_dir)
+            text = grouplog.log_context()
+
         elif question.startswith(u'表情包'):
             new_msg_total = question.split(u'表情包')[1]
             #msg.reply(new_msg)
