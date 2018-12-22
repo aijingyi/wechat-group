@@ -17,8 +17,8 @@ class GroupLog():
         self.today=datetime.date.today() 
         self.oneday=datetime.timedelta(days=1) 
         self.day = self.today-self.oneday 
-        self.logtxt =  str(self.day) + '.txt'
-        self.talktxt = self.group_name + '_' + str(self.day) + '.txt'
+        self.logtxt =  str(self.today) + '.txt'
+        self.talktxt = self.group_name + '_' + str(self.today) + '.txt'
         self.time_year = time.strftime("%Y-", time.localtime())
 
     #记录当天群成员名字        
@@ -51,7 +51,7 @@ class GroupLog():
         try:
             logfile = open(file_path,'r')
         except:
-            return [0,0,'无聊天记录。']
+            return u'今日无人发言。'
         context = logfile.readlines()
         logfile.close()
         #log_lines = len(context)
@@ -76,7 +76,7 @@ class GroupLog():
         if os.path.exists(talks_file):
             os.remove(talks_file)
         talks = open(talks_file,'a')
-        talks.writelines('昨天聊天排行榜TOP10（昵称   次数）\n\n')
+        talks.writelines('今日聊天排行榜TOP10（昵称   次数）\n\n')
         i = 0
         for key,value  in sorted(peoples_dic.items(),key = lambda x:x[1],reverse = True):
             talks_txt = key + '    ' + str(value) + '\n'
@@ -89,7 +89,13 @@ class GroupLog():
         with open(talks_file,'r') as f:
             top_contents = f.read()
         #print top_contents
-        return peoples_nums,nums, top_contents
+        if peoples_nums == 0:
+            print 'hhhh'
+            talks_total = '今日没有人发言。'
+        else:
+            print_nums = '今日有%s人在群内侃侃而谈%s句。' %(peoples_nums,nums)
+            talks_total = print_nums + '\n\n' + top_contents
+        return talks_total
          
 
 
@@ -99,6 +105,7 @@ class GroupLog():
 
 
 if __name__ == "__main__":
-    grouplog = GroupLog('ce-shi-zhuan-yong-qun','log')
+    #grouplog = GroupLog('c5fe69fa','log')
+    grouplog = GroupLog('9a8e071a','log')
     nums = grouplog.log_context()
-    #print nums
+    print nums
