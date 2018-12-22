@@ -181,8 +181,9 @@ class GroupMessage():
     def group_msg(self,group_n,group):
         #将中文群转化为拼音
         group_zh = Pinyin()
-        group_zh_name  = group_zh.get_pinyin(group_n)
-        log_file = os.path.join(self.path,group_zh_name)
+        #group_zh_name  = group_zh.get_pinyin(group_n)
+        group_puid  = group.puid
+        log_file = os.path.join(self.path,group_puid)
         if not os.path.exists(log_file):
             os.mkdir(log_file)
         #注册消息
@@ -194,7 +195,7 @@ class GroupMessage():
             file_name = '%s.txt' % ( day)
             file_ab_path = os.path.join(log_file, file_name)
             #pic_file = 'log/%s-%s' % (group_zh_name,day)
-            pic_file = os.path.join(self.path,group_zh_name,day)
+            pic_file = os.path.join(self.path,group_puid,day)
             if not os.path.exists(pic_file):
                 os.mkdir(pic_file)
     
@@ -282,8 +283,8 @@ class GroupMessage():
                     word = None
             #msg.forward(self.friend)
     #记录日志
-    def log_message(self,group_zh_name, word):
-        log_file = os.path.join(self.path,group_zh_name)
+    def log_message(self,group_puid, word):
+        log_file = os.path.join(self.path,group_puid)
         if not os.path.exists(log_file):
             os.mkdir(log_file)
         
@@ -292,7 +293,7 @@ class GroupMessage():
         day = time.strftime("%Y-%m-%d")
         file_name = '%s.txt' % ( day)
         file_ab_path = os.path.join(log_file, file_name)
-        pic_file = os.path.join(self.path,group_zh_name,day)
+        pic_file = os.path.join(self.path,group_puid,day)
         if not os.path.exists(pic_file):
             os.mkdir(pic_file)
     
@@ -318,13 +319,14 @@ class GroupMessage():
             #my_group.send_image('material/meinv.jpg')
 
             #输入昨日发言人数和次数
-            group_zh = Pinyin()
-            group_zh_name  = group_zh.get_pinyin(group_n)
+            #group_zh = Pinyin()
+            #group_zh_name  = group_zh.get_pinyin(group_n)
+            group_puid  = my_group.puid
             members_list = []
             for members in my_group:
                 members_list.append(members.nick_name)
-            analyze.GroupLog(group_zh_name,self.path).log_members(members_list)
-            members_l = analyze.GroupLog(group_zh_name,self.path).output_members()
+            analyze.GroupLog(group_puid,self.path).log_members(members_list)
+            members_l = analyze.GroupLog(group_puid,self.path).output_members()
             #print members_list
             #print members_l
             if members_l == 0 or members_l == members_list:
@@ -354,13 +356,8 @@ class GroupMessage():
             #print member_word
              
 
-            grouplog = analyze.GroupLog(group_zh_name,self.path)
-            nums = grouplog.log_context()
-            if nums[0] == 0:
-                print_nums = '昨天没有人发言。'
-            else:
-                print_nums = '昨天有%s人在群内侃侃而谈%s句。' %(nums[0],nums[1])
-            talks_total = print_nums + '\n\n' + nums[2]
+            grouplog = analyze.GroupLog(group_puid,self.path)
+            talks_total = grouplog.log_context()
             if self.send_me == 1:
                 self.friend.send(group_n)
                 #self.friend.send(group_mem_stats)
@@ -375,17 +372,17 @@ class GroupMessage():
                 #my_group.send_image('material/zaoan.png')
                 #my_group.send('早上好！')
                 word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
-                self.log_message(group_zh_name, word)
+                self.log_message(group_puid, word)
                 if self.send_talks == "1":
                     for group_num in [member_word, talks_total]:
                         time.sleep(2)
                         my_group.send(group_num)
                     word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
-                    self.log_message(group_zh_name, word)
+                    self.log_message(group_puid, word)
                     #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
                     #self.log_message(group_zh_name, word)
                     word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
-                    self.log_message(group_zh_name, word)
+                    self.log_message(group_puid, word)
                 
     #使用schedule模块执行定时任务
     def use_sche(self):
