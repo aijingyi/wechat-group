@@ -1,5 +1,4 @@
 wxpy
-xpinyin
 schedule
 pillow
 
