@@ -30,7 +30,7 @@ class XiaoY(object):
 
         self.group_role = '''群规：
 1. 文明聊天，真诚交友；\n2. 禁止广告、砍价、支付宝红包等信息；
-3. 禁止淫秽图片视频等内容；\n4.禁止不明二维码（包括拉人入群二维码），不明链接。
+3. 禁止淫秽图片视频等内容；\n4.禁止不明二维码（包括拉人入群二维码），不明链接，未经审核的公共号。
 5. 欢迎举报私下聊天下流、骗色、骗钱、推销产品等行为的人。
 6. 欢迎推荐好友入群聊天交友。
 7. 欢迎联系群主或管理员，提出宝贵意见。
@@ -109,6 +109,7 @@ class XiaoY(object):
         #if ret == 'express_pic':     
          #   msg.reply('@img@material/target.jpg')
         if ret != '1' and use_xiaoi == 1: 
+            ret = '@' + msg.member.name + '\n' + ret
             msg.reply(ret)
         return ret,use_xiaoi
 
@@ -126,7 +127,11 @@ class XiaoY(object):
         
         if isinstance(msg, Message):
             user_id = get_context_user_id(msg)
-            question = get_text_without_at_bot(msg)
+            self.user_id = user_id
+            if msg.text.startswith(u'小鱼儿'):
+                question = msg.text.replace(u'小鱼儿，','').replace(u'小鱼儿','').strip()
+            else:
+                question = get_text_without_at_bot(msg)
         else:
             user_id = "abc"
             question = msg or ""
@@ -141,8 +146,12 @@ class XiaoY(object):
             text = '聊天：任意语句\n查询天气：城市名+天气\n讲笑话：讲个笑话\n\
 计算器：678*3455\n查询火车票：北京到天津火车票\n查询星座：星座+运势;7月1日是什么星座\n心理测试：心理测试\n成语接龙：成语接龙\n\
 玩游戏：逃出房间；恐怖医院；一站到底\n手机号运势查询：手机号后四位+手机号运势'
+        elif len(question) == 0:
+            text = '在呢'
         elif question == u'你好' or question == u'您好':
             text = '你好，很高兴认识你。'
+        elif question == u'备注' or question == u'备注模板':
+            text = '%s-男-90-工作-本' % (msg.member.nick_name)
         elif question == u'彩蛋' or question == u'egg':
             text = self.egg
         elif question == u'群规' or question == u'群规是什么':
@@ -160,24 +169,26 @@ class XiaoY(object):
         elif u'你喜欢谁' in question:
             text = '我喜欢小姐姐啦，哈哈~~~'
         elif u'我爱你' in question and msg.member.nick_name == u'沐沐':
-            text = '我也爱你哦，小姐姐，nua~'
+            text = '我也爱你哦，小姐姐，mua~'
         elif u'我喜欢你' in question and msg.member.nick_name == u'沐沐':
-            text = '我也喜欢你哦，小姐姐，nua~'
+            text = '我也喜欢你哦，小姐姐，mua~'
         elif u'我想你了' in question and msg.member.nick_name == u'沐沐':
             text = '彼此彼此啦，嘿嘿，nua~'
         elif u'啥时脱单' in question:
             text = '缘分到了就脱单啦！'
-        elif u'叫他出来' in question and u'你主人出来' in question:
+        elif u'叫他出来' in question or u'你主人出来' in question:
             text = '你自己不会叫啊'
+        elif u'谁最丑' in question or u'谁最难看' in question:
+            text = '是你，是你，就是你喽~'
         elif u'最帅' in question:
             text = '还用问么，当然我主人啦，哈哈哈'
-        elif u'最美' in question and u'最漂亮' in question:
+        elif u'最美' in question or u'最漂亮' in question:
             text = '是超级无敌可爱沐沐小姐姐哦，哈哈哈'
         elif u'群统计' in question or u'男女比例' in question:
             msg.sender.update_group(True)
             text = msg.sender.members.stats_text()
         elif u'发言频率' in question or u'聊天排行榜' in question:
-            grouplog = analyze.GroupLog(msg.sender.puid,self.log_dir)
+            grouplog = analyze.GroupLog(hashlib.md5(msg.sender.name.encode('utf-8')).hexdigest()[-8:],self.log_dir)
             text = grouplog.log_context()
 
         elif question.startswith(u'表情包'):
