@@ -10,21 +10,20 @@ import schedule
 import ConfigParser
 import re
 import sys
+import hashlib
 from wxpy import *
-from xpinyin import Pinyin
+#from xpinyin import Pinyin
 
 
 from init import analyze
 #from init import express
 from init import logger
 from init import xiaoyu
+from init import xiaodou
 from init import jianbao
 
 reload(sys)
 sys.setdefaultencoding('utf8')
-if not os.path.exists('log'):
-    os.mkdir('log')
-logging = logger.WriteLog()
 
 class GroupMessage():
     #从配置文件获取参数，初始化变量
@@ -41,11 +40,11 @@ class GroupMessage():
         self.use_xiaoi = int(cf.get('wechat','xiaoi'))
         self.key = cf.get('wechat','key')
         self.secret = cf.get('wechat','secret')
+        self.xiaodou_key = cf.get('wechat','xiaodou_key')
     
         self.send_msg = u'早上好'
         self.send_night = u'晚安哦'
-        #self.send_msg = u'好的，赶紧休息吧'
-        self.friend_chuxin = u'陌初心'
+        #self.friend_chuxin = u'陌初心'
         #self.jb_content = ''
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
@@ -63,11 +62,14 @@ class GroupMessage():
         self.talk_path = os.path.join(self.path, 'talks')
         if not os.path.exists(self.talk_path):
             os.mkdir(self.talk_path)
+        self.members_path = os.path.join(self.path, 'members')
+        if not os.path.exists(self.members_path):
+            os.mkdir(self.members_path)
 
 
         self.xiaoi = XiaoI(self.key, self.secret)
         self.xiaoyuer = xiaoyu.XiaoY()
-        
+        self.xiaodou = xiaodou.Xiaodou(self.xiaodou_key)
 
         self.send_me = 1
 
@@ -94,7 +96,7 @@ class GroupMessage():
             """
             微信web版无法邀请好友入群
             if msg.text == u'北京':
-                msg.reply('缘来是你北京交流群')    
+                msg.reply('北京交流群')    
                 new_friend = self.bot.friends().search(msg.sender.name)[0]
                 group_beijing = self.bot.groups().search(u'北京交流群')[0]
                 group_beijing.add_members(new_friend, use_invitation=True)
@@ -123,8 +125,6 @@ class GroupMessage():
     def my_mps(self):
         @self.bot.register(MP)
         def print_mp_msg(msg):
-            #print msg
-            #print dir(msg)
             #self.friend.send(msg)
             #self.friend.send_raw_msg( raw_content=msg.raw)
             #msg.forward(self.friend)
@@ -180,10 +180,11 @@ class GroupMessage():
     #处理群消息
     def group_msg(self,group_n,group):
         #将中文群转化为拼音
-        group_zh = Pinyin()
+        #group_zh = Pinyin()
         #group_zh_name  = group_zh.get_pinyin(group_n)
-        group_puid  = group.puid
-        log_file = os.path.join(self.path,group_puid)
+        #group_puid  = group.puid
+        group_name = hashlib.md5(group.name.encode('utf-8')).hexdigest()[-8:]
+        log_file = os.path.join(self.path,group_name)
         if not os.path.exists(log_file):
             os.mkdir(log_file)
         #注册消息
@@ -195,7 +196,7 @@ class GroupMessage():
             file_name = '%s.txt' % ( day)
             file_ab_path = os.path.join(log_file, file_name)
             #pic_file = 'log/%s-%s' % (group_zh_name,day)
-            pic_file = os.path.join(self.path,group_puid,day)
+            pic_file = os.path.join(self.path,group_name,day)
             if not os.path.exists(pic_file):
                 os.mkdir(pic_file)
     
@@ -206,10 +207,14 @@ class GroupMessage():
             #print msg.is_at
             #print self.use_xiaoi
             #if msg.is_at and self.use_xiaoi == 1:
-            if msg.is_at:
+            if msg.is_at or msg.text.startswith(u'小鱼儿'):
                 #tuling = Tuling(api_key=self.key)
                 ret_text, self.use_xiaoi = self.xiaoyuer.do_reply(msg,self.use_xiaoi)
+              
+                #小豆机器人
                 if ret_text == '1' and self.use_xiaoi == 1:
+                    ret_text = self.xiaodou.do_reply(msg)
+                if ret_text == '2' and self.use_xiaoi == 1:
                     ret_text = self.xiaoi.do_reply(msg)
                     #ret_text = tuling.do_reply(msg)
                 myword = "%s %s:%s\n" % (create_time, self.myself.name, ret_text)
@@ -262,7 +267,7 @@ class GroupMessage():
                     new_name = new_name_1 = None
                 
                 if new_name:
-                    newcomer_msg = """@%s 欢迎新人进群交友聊天，请详细阅读群公告。\n进群请修改备注：昵称-出生年-性别-职业（学生）-学历，如：\n默默-90-女-医药-硕士"""% (new_name)
+                    newcomer_msg = """@%s 欢迎新人进群交友聊天，请详细阅读群公告。\n进群请修改备注：昵称-出生年-性别-职业（学生）-学历，如：\n%s-90-男-IT-硕士"""% (new_name, new_name)
                     msg.reply(newcomer_msg)
                 elif new_name_1:
                     newcomer_msg_1 = """@%s 欢迎新人进群交友聊天，本群是跳转群，请加我好友拉你进大群。"""% (new_name_1)
@@ -283,8 +288,8 @@ class GroupMessage():
                     word = None
             #msg.forward(self.friend)
     #记录日志
-    def log_message(self,group_puid, word):
-        log_file = os.path.join(self.path,group_puid)
+    def log_message(self,group_name, word):
+        log_file = os.path.join(self.path,group_name)
         if not os.path.exists(log_file):
             os.mkdir(log_file)
         
@@ -293,7 +298,7 @@ class GroupMessage():
         day = time.strftime("%Y-%m-%d")
         file_name = '%s.txt' % ( day)
         file_ab_path = os.path.join(log_file, file_name)
-        pic_file = os.path.join(self.path,group_puid,day)
+        pic_file = os.path.join(self.path,group_name,day)
         if not os.path.exists(pic_file):
             os.mkdir(pic_file)
     
@@ -311,22 +316,16 @@ class GroupMessage():
             except IndexError,e:
                 logging.error('%s not exists, please check it!' %group_n)
                 break
-            #print my_group
-            #print_time = time.asctime( time.localtime(time.time()) )
-            #print my_group
-            #my_group.update_group(True)
-            #group_mem_stats = my_group.members.stats_text()
-            #my_group.send_image('material/meinv.jpg')
 
             #输入昨日发言人数和次数
             #group_zh = Pinyin()
             #group_zh_name  = group_zh.get_pinyin(group_n)
-            group_puid  = my_group.puid
+            group_name = hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:]
             members_list = []
             for members in my_group:
                 members_list.append(members.nick_name)
-            analyze.GroupLog(group_puid,self.path).log_members(members_list)
-            members_l = analyze.GroupLog(group_puid,self.path).output_members()
+            analyze.GroupLog(group_name,self.path).log_members(members_list)
+            members_l = analyze.GroupLog(group_name,self.path).output_members()
             #print members_list
             #print members_l
             if members_l == 0 or members_l == members_list:
@@ -356,13 +355,13 @@ class GroupMessage():
             #print member_word
              
 
-            grouplog = analyze.GroupLog(group_puid,self.path)
+            grouplog = analyze.GroupLog(group_name,self.path)
             talks_total = grouplog.log_context()
             if self.send_me == 1:
                 self.friend.send(group_n)
                 #self.friend.send(group_mem_stats)
                 #self.friend.send_image('material/zaoan.png')
-                self.friend.send('Good morning!')
+                #self.friend.send('Good morning!')
                 for me_num in [member_word, talks_total]:
                     self.friend.send(me_num)
               
@@ -372,17 +371,17 @@ class GroupMessage():
                 #my_group.send_image('material/zaoan.png')
                 #my_group.send('早上好！')
                 word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
-                self.log_message(group_puid, word)
+                self.log_message(group_name, word)
                 if self.send_talks == "1":
                     for group_num in [member_word, talks_total]:
                         time.sleep(2)
                         my_group.send(group_num)
                     word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
-                    self.log_message(group_puid, word)
+                    self.log_message(group_name, word)
                     #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
                     #self.log_message(group_zh_name, word)
                     word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
-                    self.log_message(group_puid, word)
+                    self.log_message(group_name, word)
                 
     #使用schedule模块执行定时任务
     def use_sche(self):
@@ -391,7 +390,6 @@ class GroupMessage():
         #schedule.every().day.at("17:17").do(self.send_message)
         schedule.every().day.at(self.send_time).do(self.send_message)
         #schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
-        #schedule.every().day.at("18:58").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
         #schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
         logging.info("send_kevin_msg")
         #schedule.every(1).minutes.do(self.send_kevin_msg)
@@ -413,13 +411,14 @@ class GroupMessage():
         #my_groups = []
         for i,val in enumerate(self.group_list):
             #print val
-            logging.info(val)
+            #logging.info(val)
             try:
                 #self.bot.groups().update_group(members_details=False)
                 my_group = self.bot.groups(update=True).search(val)[0]
                 #my_group = self.bot.groups().search(val)[0]
                 self.group_msg(self.group_list[i],my_group)
-                logging.info(my_group.puid)
+                logging.info(my_group.name)
+                logging.info(hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:])
             except IndexError,e:
                 logging.error('%s not exists, please check it!' %val)
         
