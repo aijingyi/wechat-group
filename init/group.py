@@ -25,6 +25,9 @@ from init import jianbao
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+logging = logger.WriteLog()
+
+
 class GroupMessage():
     #从配置文件获取参数，初始化变量
     def __init__(self):
@@ -44,7 +47,6 @@ class GroupMessage():
     
         self.send_msg = u'早上好'
         self.send_night = u'晚安哦'
-        #self.friend_chuxin = u'陌初心'
         #self.jb_content = ''
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
@@ -75,12 +77,29 @@ class GroupMessage():
 
     def login(self):
         self.bot = Bot(cache_path=True, console_qr=True)
-        self.bot.enable_puid()
+        #self.bot.enable_puid()
         self.myself = self.bot.self
-        self.friend = self.bot.friends().search(self.friend_name)[0]
+        try:
+            self.friend = self.bot.friends().search(self.friend_name)[0]
+        except:
+            self.friend = self.bot.self
+     
         #print self.bot.friends()
-        logging.info(self.bot.groups())
+        #logging.info(self.bot.groups())
         #print self.bot.mps()
+
+    def create_group_logfile(self):
+        group = self.bot.groups(update=True)
+        logging.info(group)
+        for gs in group:
+            group_name = hashlib.md5(gs.name.encode('utf-8')).hexdigest()[-8:]
+            logging.info(gs)
+            logging.info(group_name)
+            log_file = os.path.join(self.path,group_name)
+            if not os.path.exists(log_file):
+                os.mkdir(log_file)
+        
+
     def send_friend_msg(self,send_friend,send_msg):
         logging.info(send_friend)
         self.friend_chuxin = self.bot.friends().search(send_friend)[0]
@@ -178,20 +197,19 @@ class GroupMessage():
             
             
     #处理群消息
-    def group_msg(self,group_n,group):
+    def group_msg(self):
         #将中文群转化为拼音
         #group_zh = Pinyin()
         #group_zh_name  = group_zh.get_pinyin(group_n)
         #group_puid  = group.puid
-        group_name = hashlib.md5(group.name.encode('utf-8')).hexdigest()[-8:]
-        log_file = os.path.join(self.path,group_name)
-        if not os.path.exists(log_file):
-            os.mkdir(log_file)
         #注册消息
-        @self.bot.register(group)
+        @self.bot.register(Group)
         def print_msg(msg):
             #print msg, msg.type
             #日志文件创建
+            group_name = hashlib.md5(msg.sender.name.encode('utf-8')).hexdigest()[-8:]
+            log_file = os.path.join(self.path,group_name)
+            #print group_name
             day = time.strftime("%Y-%m-%d")
             file_name = '%s.txt' % ( day)
             file_ab_path = os.path.join(log_file, file_name)
@@ -207,6 +225,7 @@ class GroupMessage():
             #print msg.is_at
             #print self.use_xiaoi
             #if msg.is_at and self.use_xiaoi == 1:
+            myword = ''
             if msg.is_at or msg.text.startswith(u'小鱼儿'):
                 #tuling = Tuling(api_key=self.key)
                 ret_text, self.use_xiaoi = self.xiaoyuer.do_reply(msg,self.use_xiaoi)
@@ -391,7 +410,6 @@ class GroupMessage():
         schedule.every().day.at(self.send_time).do(self.send_message)
         #schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
         #schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
-        logging.info("send_kevin_msg")
         #schedule.every(1).minutes.do(self.send_kevin_msg)
         
         while True:
@@ -408,29 +426,19 @@ class GroupMessage():
     def run_task(self):            
         #self.msg_from_friends_accept()
         self.msg_from_friends()
+        self.create_group_logfile()
         #my_groups = []
-        for i,val in enumerate(self.group_list):
-            #print val
-            #logging.info(val)
-            try:
-                #self.bot.groups().update_group(members_details=False)
-                my_group = self.bot.groups(update=True).search(val)[0]
-                #my_group = self.bot.groups().search(val)[0]
-                self.group_msg(self.group_list[i],my_group)
-                logging.info(my_group.name)
-                logging.info(hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:])
-            except IndexError,e:
-                logging.error('%s not exists, please check it!' %val)
-        
-        #while True:
-         #   if not self.bot.alive:
-          #      logging.info('not login')
-           #     self.main()
-            #    break
-            #time.sleep(10)
+        self.group_msg()
+
+        while True:
+            if not self.bot.alive:
+                logging.info('not login')
+                self.main()
+                break
+            time.sleep(10)
         
         #embed()
-        self.bot.join()
+        #self.bot.join()
             
     def main(self):
         self.login()
