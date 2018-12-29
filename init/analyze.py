@@ -5,6 +5,8 @@ import os
 import time
 import datetime
 import sys
+import hashlib
+import json
 
 #print sys.getdefaultencoding() 
 
@@ -21,28 +23,6 @@ class GroupLog():
         self.talktxt = self.group_name + '_' + str(self.today) + '.txt'
         self.time_year = time.strftime("%Y-", time.localtime())
 
-    #记录当天群成员名字        
-    def log_members(self,members):
-        member_log = self.group_name +'_' +  str(self.today) + '_member.txt'
-        member_file = os.path.join(self.talk_path,member_log)
-        with open(member_file,'w') as f:
-            for i in members:
-                f.write(i)
-                f.write('\n')
-    #输出昨天群成员名字
-    def output_members(self):
-        member_log = self.group_name + '_' +  str(self.day) + '_member.txt'
-        member_file = os.path.join(self.talk_path,member_log)
-
-        if not os.path.exists(member_file):
-            return 0
-        member_list = []
-        with open(member_file,'r') as f:
-            
-            for i in f.readlines():
-                member_list.append(i.strip('\n'))
-            return member_list
-       
 
     #聊天记录排行榜
     def log_context(self):
@@ -90,22 +70,91 @@ class GroupLog():
             top_contents = f.read()
         #print top_contents
         if peoples_nums == 0:
-            print 'hhhh'
             talks_total = '今日没有人发言。'
         else:
             print_nums = '今日有%s人在群内侃侃而谈%s句。' %(peoples_nums,nums)
             talks_total = print_nums + '\n\n' + top_contents
         return talks_total
          
+class GroupMembers():
+    def __init__(self,group,path):
+        self.path = path
+        self.talk_path = os.path.join(self.path,'members/')
+        self.group = group
+        self.members = group.members
+        self.group_name = hashlib.md5(group.name.encode('utf-8')).hexdigest()[-8:]
 
+    #记录当天群成员名字        
+    def log_members(self):
+        member_log = self.group_name  + '_member.json'
+        member_file = os.path.join(self.talk_path,member_log)
+        results = []
+        num = 1
+        for mem in self.members:
+            print dir(mem)
+            temp = {}
+            temp['id'] = num
+            temp['name'] = mem.name
+            temp['nick_name'] = mem.nick_name
+            temp['user_name'] = mem.user_name
+            num = num + 1
+            results.append(temp)
+    
+        with open(member_file, "w") as f:
+            # indent 超级好用，格式化保存字典，默认为None，小于0为零个空格
+            f.write(json.dumps(results, indent=4))
+            # json.dump(a,f,indent=4)   # 和上面的效果一样
+        return results
 
+    #输出昨天群成员名字
+    def output_members(self):
+        member_log = self.group_name  + '_member.json'
+        member_file = os.path.join(self.talk_path,member_log)
+
+        if not os.path.exists(member_file):
+            return 0
+        member_list = []
+        with open(member_file, "r") as f:
+            results = json.loads(f.read())
+        #f.seek(0)
+        #bb = json.load(f)    # 与 json.loads(f.read())
+        return results
+       
+    def analyze_mem(self):
+        results_old = self.output.members
+        results_new = self.log.members
+      
+        if results_old == 0 or results_old == results_new:
+            out_member = False
+        else:
+            out_nums = 0
+            in_nums = 0
+            out_mem = ''
+            for i in members_list:
+                if i not in members_l:
+                    in_nums +=1
+            for i in members_l:
+                if i not in members_list:
+                    out_mem = out_mem + i + '\n'
+                    out_nums +=1
+            if out_nums == 0:
+                out_word = '没有人离开。'
+            else:
+                out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
+                #out_word = '有%s人离开了。' %(out_nums)
+                 
+            if in_nums == 0:
+                in_word = '没有人进来，'
+            else:
+                in_word = '有%s人来了，' %(in_nums)
 
 
 
 
 
 if __name__ == "__main__":
+    print 'aaa'
     #grouplog = GroupLog('c5fe69fa','log')
-    grouplog = GroupLog('9a8e071a','log')
-    nums = grouplog.log_context()
-    print nums
+    #grouplog = GroupLog('9a8e071a','log')
+    #nums = grouplog.log_context()
+    #print nums
