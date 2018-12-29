@@ -32,7 +32,10 @@ class GroupMessage():
     def __init__(self):
         self.log_flag = 0
         cf = ConfigParser.ConfigParser()
-        cf.read('config/wechat.conf')
+        if os.path.exists('config/my.conf'):
+            cf.read('config/my.conf')
+        else:
+            cf.read('config/wechat.conf')
         self.path = cf.get('wechat', 'path')
         group_names = cf.get('wechat', 'group_name').decode('utf-8')
         self.group_list=group_names.strip(',').split(',')
