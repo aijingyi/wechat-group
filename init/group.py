@@ -17,7 +17,7 @@ from wxpy import *
 
 from init import analyze
 #from init import express
-from init import logger
+from init.logger import logger
 from init import xiaoyu
 from init import xiaodou
 from init import jianbao
@@ -25,7 +25,6 @@ from init import jianbao
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-logging = logger.WriteLog()
 
 
 class GroupMessage():
@@ -85,23 +84,23 @@ class GroupMessage():
             self.friend = self.bot.self
      
         #print self.bot.friends()
-        #logging.info(self.bot.groups())
+        #logger.info(self.bot.groups())
         #print self.bot.mps()
 
     def create_group_logfile(self):
         group = self.bot.groups(update=True)
-        logging.info(group)
+        logger.info(group)
         for gs in group:
             group_name = hashlib.md5(gs.name.encode('utf-8')).hexdigest()[-8:]
-            logging.info(gs)
-            logging.info(group_name)
+            logger.info(gs)
+            logger.info(group_name)
             log_file = os.path.join(self.path,group_name)
             if not os.path.exists(log_file):
                 os.mkdir(log_file)
         
 
     def send_friend_msg(self,send_friend,send_msg):
-        logging.info(send_friend)
+        logger.info(send_friend)
         self.friend_chuxin = self.bot.friends().search(send_friend)[0]
         self.friend_chuxin.send(send_msg)
     def send_kevin_msg(self):
@@ -132,13 +131,13 @@ class GroupMessage():
                     if send_kevin == 1:
                         msg.reply('Hello')
                 except Exception as e:
-                    logging.error(e)
+                    logger.error(e)
             else:
                 if msg.text == u'你好':
                     try:
                         msg.reply(u'你好')
                     except Exception as e:
-                        logging.error(e)
+                        logger.error(e)
 
     #处理公共号消息
     def my_mps(self):
@@ -155,7 +154,7 @@ class GroupMessage():
                         #article_url = 'https://mp.weixin.qq.com/s/5E_SGRmaDA9O1nZgjGG0mw'
                         jb = jianbao.Get_Jianbao(article.url)
                         jb_content = jb.out_jianbao()
-                        logging.info(jb_content)
+                        logger.info(jb_content)
                         self.friend.send(jb_content)
             if msg.type == SHARING and msg.sender.name == '硕士博士俱乐部':
                 for article in msg.articles:
@@ -182,18 +181,18 @@ class GroupMessage():
                                 my_group = self.bot.groups().search(group_n)[0]
                                 my_group.send(jb_content)
                             except IndexError,e:
-                                logging.error('%s not exists, please check it!' %val)
+                                logger.error('%s not exists, please check it!' %val)
 
 
     
     def msg_from_friends_accept(self):
         @self.bot.register(msg_types=FRIENDS)
         def auto_accept_friends(msg):
-            logging.info("enter accept")
+            logger.info("enter accept")
             #new_friend = self.bot.accept_friend(msg.card)
             new_friend = msg.card.accept()
             new_friend.send('你好，欢迎加入北京交友群，此群用于聊天交友，不要发布支付宝红包、广告、砍价等信息哦。同意进群请回复"是"')
-            logging.info("after accept")
+            logger.info("after accept")
             
             
     #处理群消息
@@ -333,7 +332,7 @@ class GroupMessage():
             try:
                 my_group = self.bot.groups().search(group_n)[0]
             except IndexError,e:
-                logging.error('%s not exists, please check it!' %group_n)
+                logger.error('%s not exists, please check it!' %group_n)
                 break
 
             #输入昨日发言人数和次数
@@ -415,7 +414,7 @@ class GroupMessage():
         while True:
             #self.myself.send('log out')
             if not self.bot.alive:
-                logging.error('not login')
+                logger.error('not login')
                 self.main()
                 break
             schedule.run_pending()
@@ -432,7 +431,7 @@ class GroupMessage():
 
         while True:
             if not self.bot.alive:
-                logging.info('not login')
+                logger.info('not login')
                 self.main()
                 break
             time.sleep(10)
