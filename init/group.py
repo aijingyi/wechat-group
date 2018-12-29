@@ -11,6 +11,7 @@ import ConfigParser
 import re
 import sys
 import hashlib
+import random
 from wxpy import *
 #from xpinyin import Pinyin
 
@@ -200,14 +201,9 @@ class GroupMessage():
             
     #处理群消息
     def group_msg(self):
-        #将中文群转化为拼音
-        #group_zh = Pinyin()
-        #group_zh_name  = group_zh.get_pinyin(group_n)
-        #group_puid  = group.puid
         #注册消息
         @self.bot.register(Group)
         def print_msg(msg):
-            #print msg, msg.type
             #日志文件创建
             group_name = hashlib.md5(msg.sender.name.encode('utf-8')).hexdigest()[-8:]
             log_file = os.path.join(self.path,group_name)
@@ -228,22 +224,23 @@ class GroupMessage():
             #print self.use_xiaoi
             #if msg.is_at and self.use_xiaoi == 1:
             myword = ''
-            if msg.is_at or msg.text.startswith(u'小鱼儿'):
-                #tuling = Tuling(api_key=self.key)
-                ret_text, self.use_xiaoi = self.xiaoyuer.do_reply(msg,self.use_xiaoi)
-              
-                #小豆机器人
-                if ret_text == '1' and self.use_xiaoi == 1:
-                    ret_text = self.xiaodou.do_reply(msg)
-                if ret_text == '2' and self.use_xiaoi == 1:
-                    ret_text = self.xiaoi.do_reply(msg)
-                    #ret_text = tuling.do_reply(msg)
-                myword = "%s %s:%s\n" % (create_time, self.myself.name, ret_text)
-                
             #消息处理，TEXT文本，SHARING链接，PICTURE图片，RECORDING语音，
             #ATTACHMENT附件，NOTE红包提示，新人入群提示，MAP地图
+            #print PICTURE, VIDEO,RECORDING,ATTACHMENT
             if msg.type == TEXT:
                 word = "%s %s:%s\n" % (create_time, name, msg.text)
+                if msg.is_at or msg.text.startswith(u'小鱼儿'):
+                    #tuling = Tuling(api_key=self.key)
+                    ret_text, self.use_xiaoi = self.xiaoyuer.do_reply(msg,self.use_xiaoi)
+              
+                    #小豆机器人
+                    if ret_text == '1' and self.use_xiaoi == 1:
+                        ret_text = self.xiaodou.do_reply(msg)
+                    if ret_text == '2' and self.use_xiaoi == 1:
+                        ret_text = self.xiaoi.do_reply(msg)
+                        #ret_text = tuling.do_reply(msg)
+                    myword = "%s %s:%s\n" % (create_time, self.myself.name, ret_text)
+                
             elif msg.type == SHARING:
                 #print  msg
                 word = "%s %s:SHARING:%s\n" % (create_time, name, msg.text)
@@ -251,9 +248,8 @@ class GroupMessage():
             elif msg.type in [PICTURE, VIDEO,RECORDING,ATTACHMENT]:
                 ct = msg.create_time.strftime('%Y-%m-%d-%H-%M-%S')
                 if msg.type == PICTURE:
-                    #print msg.raw
-                    msg.get_file('%s/%s-%s-%s' % (pic_file,ct,name,msg.file_name))
-                    word = "%s %s:PICTURE:%s\n" % (create_time, name, msg.file_name)
+                    msg.get_file('%s/%s-%s-%s' % (pic_file,ct,random.randint(1,10),msg.file_name))
+                    word = "%s %s:PICTURE:%s\n" % (create_time, random.randint(1,10), msg.file_name)
                 #elif msg.type == VIDEO:
                  #  msg.get_file('%s/%s-%s-%s' % (file_name,ct,name,msg.file_name))
                 elif msg.type == RECORDING:
@@ -270,18 +266,18 @@ class GroupMessage():
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
                     self.friend.send('Red Package:%s' %(group_n))
                 elif u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
-                    if group_n in self.group_newcomer_list: 
+                    if group_name in self.group_newcomer_list: 
                         new_name = msg.text.split('"')[-2]
                         new_name_1 = None
-                    elif group_n in self.group_newcomer_list1: 
+                    elif group_name in self.group_newcomer_list1: 
                         #self.friend.send(self.group_newcomer_list1)
                         new_name_1 = msg.text.split('"')[-2]
                         new_name = None
                 elif u'\u626b\u63cf' in msg.text and self.newcomer == '1':
-                    if group_n in self.group_newcomer_list: 
+                    if group_name in self.group_newcomer_list: 
                         new_name = msg.text.split('"')[1]
                         new_name_1 = None
-                    elif group_n in self.group_newcomer_list1: 
+                    elif group_name in self.group_newcomer_list1: 
                         new_name = None
                         new_name_1 = msg.text.split('"')[1]
                 else:
