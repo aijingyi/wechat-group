@@ -170,9 +170,9 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-            if msg.type == SHARING and msg.sender.name == '第壹简报':
+            if msg.type == SHARING and msg.sender.name == '绿健简报':
                 for article in msg.articles:
-                    if '第壹简报' in article.title:
+                    if '绿健简报' in article.title:
                         #self.friend.send(article.title)
                         #self.friend.send(article.url)
                         jb = jianbao.Get_Jianbao(article.url)
@@ -264,7 +264,7 @@ class GroupMessage():
                 #self.friend.send(word)
                 if u'\u6536\u5230' in msg.text:
                     #print 'red packages!!!!!!!!!!!!!!!!!!!!!!'
-                    self.friend.send('Red Package:%s' %(group_n))
+                    self.friend.send('Red Package:%s' %(msg.sender.name))
                 elif u'\u9080\u8bf7' in msg.text and self.newcomer == '1':
                     if group_name in self.group_newcomer_list: 
                         new_name = msg.text.split('"')[-2]
