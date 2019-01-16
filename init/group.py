@@ -50,7 +50,6 @@ class GroupMessage():
     
         self.send_msg = u'早上好'
         self.send_night = u'晚安哦'
-        #self.jb_content = ''
         group_note = cf.get('wechat', 'group_note').decode('utf-8')
         self.group_note_list=group_note.strip(',').split(',')
         group_jianbao = cf.get('wechat', 'group_jianbao').decode('utf-8')
@@ -77,6 +76,10 @@ class GroupMessage():
         self.xiaodou = xiaodou.Xiaodou(self.xiaodou_key)
 
         self.send_me = 1
+
+    def init_group_name(self):
+        self.group__newcomer = []
+
 
     def login(self):
         self.bot = Bot(cache_path=True, console_qr=True)
@@ -111,6 +114,22 @@ class GroupMessage():
         now_time = time.asctime( time.localtime(time.time()) )
         self.kevin_m = self.bot.friends().search('Kevin')[0]
         self.kevin_m.send(now_time)
+
+    def send_group_msg(self,send_msg):
+        #self.group_jiaoyou = self.bot.groups().search(u'北京交友群')[0]
+        self.group_jiaoyou = self.bot.groups().search(u'测试专用群')[0]
+        self.group_jiaoyou.send(send_msg)
+
+    def read_topic(self):
+        topic_f = open("material/topic.txt","r")
+        comment = topic_f.readlines()
+        comment_filter = []
+        for co in comment:
+            if not co.startswith('#'):
+                comment_filter.append(co)
+        #print len(comment_filter)
+        #one_topic = comment_filter[random.randint(0,len(comment)-1)]
+        return comment_filter
 
     def msg_from_friends(self):
         @self.bot.register(Friend)
@@ -170,9 +189,9 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
-            if msg.type == SHARING and msg.sender.name == '绿健简报':
+            if msg.type == SHARING and msg.sender.name == '简报微刊':
                 for article in msg.articles:
-                    if '绿健简报' in article.title:
+                    if '简报微刊' in article.title:
                         #self.friend.send(article.title)
                         #self.friend.send(article.url)
                         jb = jianbao.Get_Jianbao(article.url)
@@ -405,10 +424,12 @@ class GroupMessage():
         #if self.send_me == 1:
         #self.send_message()
         #schedule.every().day.at("17:17").do(self.send_message)
-        schedule.every().day.at(self.send_time).do(self.send_message)
-        #schedule.every().day.at("6:57").do(self.send_friend_msg,self.friend_chuxin,self.send_msg)
-        #schedule.every().day.at("22:58").do(self.send_friend_msg,self.friend_chuxin,self.send_night)
-        #schedule.every(1).minutes.do(self.send_kevin_msg)
+        #schedule.every().day.at(self.send_time).do(self.send_message)
+        schedule.every().day.at("7:30").do(self.send_group_msg,u'早上好')
+        #schedule.every().day.at("9:30").do(self.send_group_msg,self.read_topic())
+        #schedule.every().day.at("13:30").do(self.send_group_msg,self.read_topic())
+        #schedule.every().day.at("17:30").do(self.send_group_msg,self.read_topic())
+        #schedule.every(1).minutes.do(self.send_group_msg,self.read_topic()[random.randint(0,len(self.read_topic())-1)])
         
         while True:
             #self.myself.send('log out')
