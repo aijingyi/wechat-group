@@ -30,7 +30,7 @@ class Get_Jianbao():
         #lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n').split("\n")[13:-1]
         #print content
         lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n')\
-.replace('12\n','12').replace('2\n','2').split("\n")[13:29]
+.replace('12\n','12').replace('2\n','2').split("\n")[13:28]
         #print lines
         out_content = ''
         for line in lines:
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     jianbao = []
     jianbao.append('https://mp.weixin.qq.com/s/QfRSelJSNkHa6la9rIphDA')
     jianbao.append('https://mp.weixin.qq.com/s/1PhxnsY1i5nA0mEUbaab1Q')
-    #jianbao.append('https://mp.weixin.qq.com/s/kKyIag0b5Eov3Tp3HSFkbw')
+    jianbao.append('https://mp.weixin.qq.com/s/XfeZm1GL8I6gW405PAkmRQ')
     for jianbao_url in jianbao:
         jb = Get_Jianbao(jianbao_url)
         content = jb.out_jianbao()
