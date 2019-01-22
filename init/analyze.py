@@ -1,5 +1,7 @@
 #coding:utf-8
 
+from wxpy import *
+
 #analyze group log
 import os
 import time
@@ -77,9 +79,9 @@ class GroupLog():
         return talks_total
          
 class GroupMembers():
-    def __init__(self,group,path):
+    def __init__(self,path,group):
         self.path = path
-        self.talk_path = os.path.join(self.path,'members/')
+        self.talk_path = os.path.join(self.path,'members')
         self.group = group
         self.members = group.members
         self.group_name = hashlib.md5(group.name.encode('utf-8')).hexdigest()[-8:]
@@ -91,7 +93,6 @@ class GroupMembers():
         results = []
         num = 1
         for mem in self.members:
-            print dir(mem)
             temp = {}
             temp['id'] = num
             temp['name'] = mem.name
@@ -121,40 +122,42 @@ class GroupMembers():
         return results
        
     def analyze_mem(self):
-        results_old = self.output.members
-        results_new = self.log.members
+        results_old = self.output_members()
+        results_new = self.log_members()
       
         if results_old == 0 or results_old == results_new:
-            out_member = False
+            return False
         else:
-            out_nums = 0
-            in_nums = 0
+            result_old_list = []
+            result_new_list = []
+            for old_re in results_old:
+                #print old_re
+                result_old_list.append(old_re['nick_name'])
+            for new_re in results_new:
+                result_new_list.append(new_re['nick_name'])
+            #print result_old_list
+            #print result_new_list
+     
             out_mem = ''
-            for i in members_list:
-                if i not in members_l:
-                    in_nums +=1
-            for i in members_l:
-                if i not in members_list:
-                    out_mem = out_mem + i + '\n'
-                    out_nums +=1
-            if out_nums == 0:
-                out_word = '没有人离开。'
-            else:
-                out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
-                #out_word = '有%s人离开了。' %(out_nums)
-                 
-            if in_nums == 0:
-                in_word = '没有人进来，'
-            else:
-                in_word = '有%s人来了，' %(in_nums)
-
-
+            for i in result_old_list:
+                if i not in result_new_list:
+                    out_mem = out_mem + i + '，'
+            if out_mem == '':
+                return False
+            print_out = u"%s 悄悄的离开了本群。" %(out_mem[:-1])
+            self.group.send(print_out)
+            return print_out
+                    
 
 
 
 if __name__ == "__main__":
-    print 'aaa'
     #grouplog = GroupLog('c5fe69fa','log')
     #grouplog = GroupLog('9a8e071a','log')
-    #nums = grouplog.log_context()
-    #print nums
+    #nums = grouplog.log_context(
+    bot = Bot(cache_path = True, console_qr = True)
+    group = bot.groups().search(u'测试专用群')[0]
+    group_mem = GroupMembers('log',group)
+    print_out = group_mem.analyze_mem()
+    if print_out:
+        print print_out

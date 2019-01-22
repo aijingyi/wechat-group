@@ -116,8 +116,8 @@ class GroupMessage():
         self.kevin_m.send(now_time)
 
     def send_group_msg(self,send_msg):
-        #self.group_jiaoyou = self.bot.groups().search(u'北京交友群')[0]
-        self.group_jiaoyou = self.bot.groups().search(u'测试专用群')[0]
+        self.group_jiaoyou = self.bot.groups().search(u'北京交友群')[0]
+        #self.group_jiaoyou = self.bot.groups().search(u'测试专用群')[0]
         self.group_jiaoyou.send(send_msg)
 
     def read_topic(self):
@@ -169,6 +169,7 @@ class GroupMessage():
             #self.friend.send(msg)
             #self.friend.send_raw_msg( raw_content=msg.raw)
             #msg.forward(self.friend)
+            """
             if msg.type == SHARING and msg.sender.name == '爱净意':
                 for article in msg.articles:
                     if '第壹简报' in article.title:
@@ -189,6 +190,7 @@ class GroupMessage():
                     if  '妹子' in article.title and '现居北京' in article.title:
                         self.friend.send(article.title)
                         self.friend.send(article.url)
+            """
             if msg.type == SHARING and msg.sender.name == '简报微刊':
                 for article in msg.articles:
                     if '简报微刊' in article.title:
@@ -345,62 +347,20 @@ class GroupMessage():
 
     #发送定时任务
     def send_message(self):
-        #group_n = '测试专用群'.decode('utf-8')
+        #self.group_note_list  = [u'测试专用群']
+        #print self.group_note_list
         for group_n in self.group_note_list:
             try:
                 my_group = self.bot.groups().search(group_n)[0]
             except IndexError,e:
                 logger.error('%s not exists, please check it!' %group_n)
-                break
+                continue
 
-            #输入昨日发言人数和次数
-            #group_zh = Pinyin()
-            #group_zh_name  = group_zh.get_pinyin(group_n)
-            group_name = hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:]
-            members_list = []
-            for members in my_group:
-                members_list.append(members.nick_name)
-            analyze.GroupLog(group_name,self.path).log_members(members_list)
-            members_l = analyze.GroupLog(group_name,self.path).output_members()
-            #print members_list
-            #print members_l
-            if members_l == 0 or members_l == members_list:
-                member_word = '群内没有人员变动。'
-            else:
-                out_nums = 0
-                in_nums = 0
-                out_mem = ''
-                for i in members_list:
-                    if i not in members_l:
-                        in_nums +=1
-                for i in members_l:
-                    if i not in members_list:
-                        out_mem = out_mem + i + '\n'
-                        out_nums +=1
-                if out_nums == 0:
-                    out_word = '没有人离开。'
-                else:
-                    out_word = '有%s人离开了。\n离开的人有：\n%s' %(out_nums, out_mem)
-                    #out_word = '有%s人离开了。' %(out_nums)
-                   
-                if in_nums == 0:
-                    in_word = '没有人进来，'
-                else:
-                    in_word = '有%s人来了，' %(in_nums)
-                member_word = in_word + out_word
-            #print member_word
-             
+            #group_name = hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:]
+            group_members = analyze.GroupMembers(self.path, my_group) 
+            group_members.analyze_mem()
 
-            grouplog = analyze.GroupLog(group_name,self.path)
-            talks_total = grouplog.log_context()
-            if self.send_me == 1:
-                self.friend.send(group_n)
-                #self.friend.send(group_mem_stats)
-                #self.friend.send_image('material/zaoan.png')
-                #self.friend.send('Good morning!')
-                for me_num in [member_word, talks_total]:
-                    self.friend.send(me_num)
-              
+            '''  
             elif self.send_me ==11:
                 #my_group.send(group_mem_stats)
                 create_time = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -418,13 +378,13 @@ class GroupMessage():
                     #self.log_message(group_zh_name, word)
                     word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
                     self.log_message(group_name, word)
-                
+            ''' 
     #使用schedule模块执行定时任务
     def use_sche(self):
         #if self.send_me == 1:
         #self.send_message()
         #schedule.every().day.at("17:17").do(self.send_message)
-        #schedule.every().day.at(self.send_time).do(self.send_message)
+        schedule.every(10).minutes.do(self.send_message)
         schedule.every().day.at("7:30").do(self.send_group_msg,u'早上好')
         #schedule.every().day.at("9:30").do(self.send_group_msg,self.read_topic())
         #schedule.every().day.at("13:30").do(self.send_group_msg,self.read_topic())
