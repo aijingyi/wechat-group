@@ -16,18 +16,12 @@ class Get_Jianbao():
         return html
     def out_jianbao(self):
         soup = BeautifulSoup(self.get_html(), "html.parser")
-        #print soup.prettify()
-        #js_head = soup.find(id='activity-name')
-        #for string in js_head.stripped_strings:
-         #   head = string
-        #print js_content.string 
         js_content = soup.find(id='js_content')
         js_p = js_content.find_all('p')
         content = ''
         for cont in js_p:
             for st in cont.stripped_strings:
                 content = content + st + '\n' 
-        #lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n').split("\n")[13:-1]
         #print content
         lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n')\
 .replace('12\n','12').replace('2\n','2').split("\n")
