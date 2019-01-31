@@ -4,10 +4,10 @@
 
 PID=`ps -ef |grep run.py |grep -v grep |awk '{print $2}'`
 echo $PID
-
+dir=`pwd`
 start_soft()
 {
-    python ~/test/pytest/wechat-group/run.py &>log/wechat.log &
+    python $dir/run.py &>log/wechat.log &
 }
 
 stop_soft()
