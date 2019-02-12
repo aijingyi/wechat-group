@@ -191,7 +191,7 @@ class GroupMessage():
                         self.friend.send(article.title)
                         self.friend.send(article.url)
             """
-            if msg.type == SHARING and msg.sender.name == '简报微刊':
+            if msg.type == SHARING and msg.sender.name == '零点简报':
                 for article in msg.articles:
                     if '简报微刊' in article.title:
                         #self.friend.send(article.title)
@@ -270,7 +270,7 @@ class GroupMessage():
                 ct = msg.create_time.strftime('%Y-%m-%d-%H-%M-%S')
                 if msg.type == PICTURE:
                     msg.get_file('%s/%s-%s-%s' % (pic_file,ct,random.randint(1,10),msg.file_name))
-                    word = "%s %s:PICTURE:%s\n" % (create_time, random.randint(1,10), msg.file_name)
+                    word = "%s %s:PICTURE:%s\n" % (create_time, name, msg.file_name)
                 #elif msg.type == VIDEO:
                  #  msg.get_file('%s/%s-%s-%s' % (file_name,ct,name,msg.file_name))
                 elif msg.type == RECORDING:
