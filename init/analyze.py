@@ -113,6 +113,7 @@ class GroupMembers():
         member_file = os.path.join(self.talk_path,member_log)
 
         if not os.path.exists(member_file):
+            self.log_members()
             return 0
         member_list = []
         with open(member_file, "r") as f:
@@ -153,10 +154,11 @@ class GroupMembers():
 
 if __name__ == "__main__":
     #grouplog = GroupLog('c5fe69fa','log')
-    #grouplog = GroupLog('9a8e071a','log')
-    #nums = grouplog.log_context(
-    bot = Bot(cache_path = True, console_qr = True)
-    group = bot.groups().search(u'测试专用群')[0]
+    #grouplog = GroupLog('9e3a6e4a','log')
+    #nums = grouplog.log_context()
+    #print nums
+    bot = Bot(cache_path = False, console_qr = True)
+    group = bot.groups().search(u'户外交友群')[0]
     group_mem = GroupMembers('log',group)
     print_out = group_mem.analyze_mem()
     if print_out:
