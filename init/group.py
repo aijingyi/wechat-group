@@ -127,8 +127,8 @@ class GroupMessage():
             #print len(comment_filter)
             one_topic = comment_filter[random.randint(0,len(comment_filter)-1)]
     
-            #self.group_jiaoyou = self.bot.groups().search(u'北京交友群')[0]
-            self.group_jiaoyou = self.bot.groups().search(u'测试专用群')[0]
+            self.group_jiaoyou = self.bot.groups().search(u'北京交友群')[0]
+            #self.group_jiaoyou1 = self.bot.groups().search(u'测试专用群')[0]
             self.group_jiaoyou.send(one_topic)
 
         timer = threading.Timer(3600, self.send_group_msg)
