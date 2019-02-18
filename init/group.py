@@ -131,7 +131,7 @@ class GroupMessage():
             #self.group_jiaoyou1 = self.bot.groups().search(u'测试专用群')[0]
             self.group_jiaoyou.send(one_topic)
 
-        timer = threading.Timer(3600, self.send_group_msg)
+        timer = threading.Timer(7200, self.send_group_msg)
         timer.start()
 
     def msg_from_friends(self):
@@ -360,30 +360,11 @@ class GroupMessage():
                 continue
 
             #group_name = hashlib.md5(my_group.name.encode('utf-8')).hexdigest()[-8:]
-            group_members = analyze.GroupMembers(self.path, my_group) 
+            group_members = analyze.GroupMembers(self.path, my_group, self.friend) 
             group_members.analyze_mem()
         timer = threading.Timer(600, self.send_message)
         timer.start()
 
-        '''  
-        elif self.send_me ==11:
-            #my_group.send(group_mem_stats)
-            create_time = time.strftime('%Y-%m-%d %H:%M:%S')
-            #my_group.send_image('material/zaoan.png')
-            #my_group.send('早上好！')
-            word = "%s %s:Good Morning!\n" % (create_time, self.myself.name)
-            self.log_message(group_name, word)
-            if self.send_talks == "1":
-                for group_num in [member_word, talks_total]:
-                    time.sleep(2)
-                    my_group.send(group_num)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, member_word)
-                self.log_message(group_name, word)
-                #word = "%s %s:%s\n" % (create_time, self.myself.name, print_nums)
-                #self.log_message(group_zh_name, word)
-                word = "%s %s:%s\n" % (create_time, self.myself.name, talks_total)
-                self.log_message(group_name, word)
-        ''' 
     #使用schedule模块执行定时任务
     def use_sche(self):
         #if self.send_me == 1:
@@ -391,10 +372,6 @@ class GroupMessage():
         #schedule.every().day.at("17:17").do(self.send_message)
         #schedule.every(10).minutes.do(self.send_message)
         schedule.every().day.at("7:30").do(self.send_group_msg,u'早上好')
-        #schedule.every().day.at("9:30").do(self.send_group_msg,self.read_topic())
-        #schedule.every().day.at("13:30").do(self.send_group_msg,self.read_topic())
-        #schedule.every().day.at("17:30").do(self.send_group_msg,self.read_topic())
-        #schedule.every(1).minutes.do(self.send_group_msg,self.read_topic()[random.randint(0,len(self.read_topic())-1)])
         
         while True:
             #self.myself.send('log out')
@@ -435,7 +412,7 @@ class GroupMessage():
         timer = threading.Timer(1, self.send_message)
         timer.start()
         # send topic 
-        timer1 = threading.Timer(1, self.send_group_msg)
+        timer1 = threading.Timer(3600, self.send_group_msg)
         timer1.start()
         #t2 = threading.Thread(target=self.use_sche,args=())
         #t2.setDaemon(True)

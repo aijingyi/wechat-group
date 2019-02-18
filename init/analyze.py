@@ -79,10 +79,11 @@ class GroupLog():
         return talks_total
          
 class GroupMembers():
-    def __init__(self,path,group):
+    def __init__(self,path,group, send_to_me):
         self.path = path
         self.talk_path = os.path.join(self.path,'members')
         self.group = group
+        self.send_to_me = send_to_me
         self.members = group.members
         self.group_name = hashlib.md5(group.name.encode('utf-8')).hexdigest()[-8:]
 
@@ -146,7 +147,8 @@ class GroupMembers():
             if out_mem == '':
                 return False
             print_out = u"%s 悄悄的离开了本群。" %(out_mem[:-1])
-            self.group.send(print_out)
+            self.send_to_me.send(print_out)
+            #self.group.send(print_out)
             return print_out
                     
 
