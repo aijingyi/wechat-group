@@ -194,7 +194,7 @@ class GroupMessage():
                         self.friend.send(article.title)
                         self.friend.send(article.url)
             """
-            if msg.type == SHARING and msg.sender.name == '零点简报':
+            if msg.type == SHARING and msg.sender.name == '简报微刊':
                 for article in msg.articles:
                     if '简报微刊' in article.title:
                         #self.friend.send(article.title)
@@ -311,7 +311,7 @@ class GroupMessage():
                     newcomer_msg = """@%s 欢迎新人进群交友聊天，请详细阅读群公告。\n进群请修改备注：昵称-出生年-性别-职业（学生）-学历，如：\n%s-90-男-IT-硕士"""% (new_name, new_name)
                     msg.reply(newcomer_msg)
                 elif new_name_1:
-                    newcomer_msg_1 = """@%s 欢迎新人进群交友聊天，本群是跳转群，请加我好友拉你进大群。"""% (new_name_1)
+                    newcomer_msg_1 = """@%s 欢迎新人进群交友聊天，本群小伙伴是来自全国各地的单身非单身高学历人才，只交流不找对象，禁止异性私聊哦。请文明聊天，真诚交流。"""% (new_name_1)
                     msg.reply(newcomer_msg_1)
                 word = "%s %s:NOTE:%s\n" % (create_time, name, msg.text)
             elif msg.type == CARD:
