@@ -48,8 +48,9 @@ if __name__ == '__main__':
     jianbao = []
     #jianbao.append('https://mp.weixin.qq.com/s/QfRSelJSNkHa6la9rIphDA')
     #jianbao.append('https://mp.weixin.qq.com/s/1PhxnsY1i5nA0mEUbaab1Q')
-    jianbao.append('https://mp.weixin.qq.com/s/XfeZm1GL8I6gW405PAkmRQ')
-    jianbao.append('https://mp.weixin.qq.com/s/A_5hMZG2mzAn1HRnKOttrA')
+    #jianbao.append('https://mp.weixin.qq.com/s/XfeZm1GL8I6gW405PAkmRQ')
+    #jianbao.append('https://mp.weixin.qq.com/s/A_5hMZG2mzAn1HRnKOttrA')
+    jianbao.append('https://mp.weixin.qq.com/s/m1-m9yK0_bvuleoDX6Am2Q')
     for jianbao_url in jianbao:
         jb = Get_Jianbao(jianbao_url)
         content = jb.out_jianbao()
