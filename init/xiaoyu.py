@@ -183,7 +183,11 @@ class XiaoY(object):
         elif u'最帅' in question:
             text = '还用问么，当然我主人啦，哈哈哈'
         elif u'最美' in question or u'最漂亮' in question:
-            text = '是超级无敌可爱沐沐小姐姐哦，哈哈哈'
+            text = '是超级无敌可爱小姐姐哦，哈哈哈'
+        elif u'我发红包' in question:
+            text = '你先给我发一个吧'
+        elif u'你发红包' in question:
+            text = '赶紧发吧'
         elif u'群统计' in question or u'男女比例' in question:
             msg.sender.update_group(True)
             text = msg.sender.members.stats_text()
