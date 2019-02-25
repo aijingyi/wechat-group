@@ -33,7 +33,7 @@ class Get_Jianbao():
             if u'【微语】' in lines[num]:
                 ln2 = num
                 break 
-        lines = lines[ln1 : ln2 + 1]
+        lines = lines[ln1 : ln2 + 2]
         #print lines
         out_content = ''
         for line in lines:
