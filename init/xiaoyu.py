@@ -36,6 +36,12 @@ class XiaoY(object):
 7. 欢迎联系群主或管理员，提出宝贵意见。
 违反群规者将视情况而定给予警告或踢出群的决定。'''
 
+        self.group_manager = '''管理员职责：
+1. 以身作则，遵守群规；\n2. 对群内违反规定的人员给予警告或者踢群决定；
+3. 合理引导群内言论，积极向上，有正能量；\n4.推荐好友入群。
+5. 对于踢出群的行为要谨慎操作，按规定执行，不得有主观意识，依法不依人。
+6. 对群的建设实时提出宝贵意见。
+'''
         self.log_dir = 'log'
         #self.secret = secret
         self.egg = '''KISS：xoxo，么么哒，cium，baci，besos\n星星：miss u，想你了\n蛋糕： birthday，生日快乐'''
@@ -156,6 +162,8 @@ class XiaoY(object):
             text = self.egg
         elif question == u'群规' or question == u'群规是什么':
             text = self.group_role
+        elif question == u'管理员职责' or question == u'管理员职责是什么':
+            text = self.group_manager
         elif u'主人是谁' in question:
             text = '我的主人是Kevin。'
         elif u'送我一个男盆友' in question or u'送我一个男朋友' in question:
