@@ -12,29 +12,35 @@ class Get_Jianbao():
     def get_html(self):
         response = urllib2.urlopen(self.jianbao_url)
         html = response.read()
-        #print html
         return html
     def out_jianbao(self):
         soup = BeautifulSoup(self.get_html(), "html.parser")
+        #print soup.prettify()
+        #js_head = soup.find(id='activity-name')
+        #for string in js_head.stripped_strings:
+         #   head = string
+        #print js_content.string 
         js_content = soup.find(id='js_content')
+        #print js_content
         js_p = js_content.find_all('p')
+        #print js_p
         content = ''
         for cont in js_p:
             for st in cont.stripped_strings:
+                #print st
                 content = content + st + '\n' 
+        #lines =content.replace(u'(公众号:第壹简报)', '').replace('\n\n','\n').split("\n")[0:14]
         #print content
-        lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n')\
-.replace('12\n','12').replace('2\n','2').split("\n")
-        for num in range(0,40):
-            if u'日简报微刊' in lines[num]:
-                ln1 = num
-                break 
-        for num in range(0,40):
-            if u'【微语】' in lines[num]:
-                ln2 = num
-                break 
-        lines = lines[ln1 : ln2 + 2]
-        #print lines
+        lines =content.replace(u'(公众号:第壹简报)', '').replace('\n\n','\n').split("\n")
+        for num in range(0,35):
+            if u'来源: 澎湃新闻' in lines[num]:
+                l_n = num
+                break
+        #print l_n
+        l_n= l_n + 1
+        lines = lines[l_n:l_n+17]
+        #for i in lines:
+         #   print i
         out_content = ''
         for line in lines:
             if not out_content:
@@ -46,11 +52,14 @@ class Get_Jianbao():
 
 if __name__ == '__main__':
     jianbao = []
-    #jianbao.append('https://mp.weixin.qq.com/s/QfRSelJSNkHa6la9rIphDA')
-    #jianbao.append('https://mp.weixin.qq.com/s/1PhxnsY1i5nA0mEUbaab1Q')
-    #jianbao.append('https://mp.weixin.qq.com/s/XfeZm1GL8I6gW405PAkmRQ')
-    #jianbao.append('https://mp.weixin.qq.com/s/A_5hMZG2mzAn1HRnKOttrA')
-    jianbao.append('https://mp.weixin.qq.com/s/m1-m9yK0_bvuleoDX6Am2Q')
+    #jianbao.append('https://mp.weixin.qq.com/s/5E_SGRmaDA9O1nZgjGG0mw')
+    #jianbao.append('https://mp.weixin.qq.com/s/XiKzJWrid8bcA_hDO7ZIjA')
+    #jianbao.append('https://mp.weixin.qq.com/s/UMKZjo2t6GRe--YJjxowug')
+    #jianbao.append('https://mp.weixin.qq.com/s/boQCZsy7XRuiqZhhoM9nOA')
+    #jianbao.append('https://mp.weixin.qq.com/s/sge8zhlL71yeBr0JZNI21A')
+    #jianbao.append('https://mp.weixin.qq.com/s/e5nijc_xRvv4niufqnx5mA')
+    jianbao.append('https://mp.weixin.qq.com/s/7yUF15misy-qwrY0TpdjFQ')
+
     for jianbao_url in jianbao:
         jb = Get_Jianbao(jianbao_url)
         content = jb.out_jianbao()
