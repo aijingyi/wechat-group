@@ -2,13 +2,13 @@
 
 
 
-PID=`ps -ef |grep run.py |grep -v grep |awk '{print $2}'`
+PID=`ps -ef |grep  wechat-group/run.py |grep -v grep |awk '{print $2}'`
 echo $PID
 dir=/home/kevin/pytest/wechat-group
 cd $dir
 start_soft()
 {
-    python $dir/run.py &>log/wechat.log &
+    python2 $dir/run.py &>log/wechat.log &
 }
 
 stop_soft()

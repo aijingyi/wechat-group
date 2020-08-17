@@ -101,7 +101,7 @@ class XiaoY(object):
         return ret
 
 
-    def do_reply(self, msg, use_xiaoi):
+    def do_reply(self, msg, use_xiaoi,my_group):
         """
         回复消息，并返回答复文本
 
@@ -109,7 +109,7 @@ class XiaoY(object):
         :return: 答复文本
         """
         
-        ret,use_xiaoi = self.reply_text(msg,use_xiaoi)
+        ret,use_xiaoi = self.reply_text(msg,use_xiaoi,my_group)
         #ret = '尊敬的用户，您好。由于近期有人举报机器人扰乱群秩序，\
         #所以正在接受整顿，功能恢复日期待定。大家有意见可以提出来。'
         #if ret == 'express_pic':     
@@ -119,7 +119,7 @@ class XiaoY(object):
             msg.reply(ret)
         return ret,use_xiaoi
 
-    def reply_text(self, msg,use_xiaoi):
+    def reply_text(self, msg,use_xiaoi,my_group):
         """
         仅返回答复文本
 
@@ -196,6 +196,21 @@ class XiaoY(object):
             text = '你先给我发一个吧'
         elif u'你发红包' in question:
             text = '赶紧发吧'
+        elif u'踢出' in question:
+            text = question
+            msg.sender.send(question)
+            #if msg.member == group_admin :
+            if 1 == 1:
+                for member_name in msg.text.split('@')[2:]:
+                    print(member_name)
+                    print(my_group.members)
+                    print(my_group.members.search(member_name)[0].name)
+                    re_name = my_group.members.search(member_name)[0].remove
+                    print(re_name)
+                    #msg.sender.send("已经移出:"+member_name)
+                    text = "已经移出:"+member_name
+            else:
+                text= "你不是管理员不能进行踢人操作"
         elif u'群统计' in question or u'男女比例' in question:
             msg.sender.update_group(True)
             text = msg.sender.members.stats_text()

@@ -4,43 +4,46 @@
 import re
 import urllib2
 from bs4 import BeautifulSoup
+import datetime
 
 class Get_Jianbao():
     def __init__(self,jianbao_url):
         self.jianbao_url = jianbao_url
+        self.day = datetime.datetime.now().strftime("%d")
+        #month = datetime.datetime.now().strftime("%m")
+        #self.head_num = u"月%s日" % (day )
+        #print self.head_num
 
     def get_html(self):
         response = urllib2.urlopen(self.jianbao_url)
         html = response.read()
+        #print html
         return html
     def out_jianbao(self):
         soup = BeautifulSoup(self.get_html(), "html.parser")
-        #print soup.prettify()
-        #js_head = soup.find(id='activity-name')
-        #for string in js_head.stripped_strings:
-         #   head = string
-        #print js_content.string 
         js_content = soup.find(id='js_content')
-        #print js_content
         js_p = js_content.find_all('p')
-        #print js_p
         content = ''
         for cont in js_p:
             for st in cont.stripped_strings:
-                #print st
                 content = content + st + '\n' 
-        #lines =content.replace(u'(公众号:第壹简报)', '').replace('\n\n','\n').split("\n")[0:14]
         #print content
-        lines =content.replace(u'(公众号:第壹简报)', '').replace('\n\n','\n').split("\n")
-        for num in range(0,35):
-            if u'来源: 澎湃新闻' in lines[num]:
-                l_n = num
-                break
-        #print l_n
-        l_n= l_n + 1
-        lines = lines[l_n:l_n+17]
+        lines =content.replace(u'（公众号：简报微刊）', '').replace('\n\n','\n')\
+.replace('12\n','12').replace('2\n','2').replace('10\n','10')\
+.replace('11\n', '11').replace('12\n', '12').split("\n")
+        #print(len(lines))
         #for i in lines:
-         #   print i
+            #print(i)
+        for num in range(0,75):
+            if u"日简报微刊"  in lines[num]:
+                ln1 = num
+                break 
+        for num in range(0,40):
+            if u'【微语】' in lines[num]:
+                ln2 = num
+                break 
+        lines = lines[ln1 :  ln1 + 20]
+        #print lines
         out_content = ''
         for line in lines:
             if not out_content:
@@ -52,14 +55,10 @@ class Get_Jianbao():
 
 if __name__ == '__main__':
     jianbao = []
-    #jianbao.append('https://mp.weixin.qq.com/s/5E_SGRmaDA9O1nZgjGG0mw')
-    #jianbao.append('https://mp.weixin.qq.com/s/XiKzJWrid8bcA_hDO7ZIjA')
-    #jianbao.append('https://mp.weixin.qq.com/s/UMKZjo2t6GRe--YJjxowug')
-    #jianbao.append('https://mp.weixin.qq.com/s/boQCZsy7XRuiqZhhoM9nOA')
-    #jianbao.append('https://mp.weixin.qq.com/s/sge8zhlL71yeBr0JZNI21A')
-    #jianbao.append('https://mp.weixin.qq.com/s/e5nijc_xRvv4niufqnx5mA')
-    jianbao.append('https://mp.weixin.qq.com/s/7yUF15misy-qwrY0TpdjFQ')
-
+    #jianbao.append('https://mp.weixin.qq.com/s/_YNcV5iT_PwBlz-I6D0Yxg')
+    #jianbao.append('https://mp.weixin.qq.com/s/rXUUdM_wuERPpm2u65WzsA')
+    #jianbao.append('https://mp.weixin.qq.com/s/fQ_oOcL4bscvz1ksGe5oSg')
+    jianbao.append('https://mp.weixin.qq.com/s/8kW_WETToHGcAOGZZKwFcg')
     for jianbao_url in jianbao:
         jb = Get_Jianbao(jianbao_url)
         content = jb.out_jianbao()
