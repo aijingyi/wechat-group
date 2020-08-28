@@ -7,7 +7,7 @@ import time
 import datetime
 import threading
 import schedule
-import ConfigParser
+import configparser
 import re
 import sys
 import hashlib
@@ -23,9 +23,9 @@ from init import xiaoyu
 from init import xiaodou
 from init import jianbao
 from init import diyi
-
+from importlib import reload
 reload(sys)
-sys.setdefaultencoding('utf8')
+#sys.setdefaultencoding('utf8')
 
 
 
@@ -33,17 +33,17 @@ class GroupMessage():
     #从配置文件获取参数，初始化变量
     def __init__(self):
         self.log_flag = 0
-        cf = ConfigParser.ConfigParser()
+        cf = configparser.ConfigParser()
         if os.path.exists('config/my.conf'):
             cf.read('config/my.conf')
         else:
             cf.read('config/wechat.conf')
         self.path = cf.get('wechat', 'path')
-        group_names = cf.get('wechat', 'group_name').decode('utf-8')
+        group_names = cf.get('wechat', 'group_name')
         self.group_list=group_names.strip(',').split(',')
-        self.friend_name = cf.get('wechat','friends').decode('utf-8')
-        self.torla_name = cf.get('wechat','group').decode('utf-8')
-        self.welcome_word = cf.get('wechat','welcome_word').decode('utf-8')
+        self.friend_name = cf.get('wechat','friends')
+        self.torla_name = cf.get('wechat','group')
+        self.welcome_word = cf.get('wechat','welcome_word')
         self.newcomer = cf.get('wechat','newcomer')
         self.recev_mps = int(cf.get('wechat','recev_mps'))
         self.use_xiaoi = int(cf.get('wechat','xiaoi'))
@@ -52,21 +52,21 @@ class GroupMessage():
         self.xiaodou_key = cf.get('wechat','xiaodou_key')
         self.friends_accept = cf.get('wechat','friends_accept')
    
-        self.invite_group1 = cf.get('wechat','invite_group1').decode('utf-8')
-        self.invite_group2 = cf.get('wechat','invite_group2').decode('utf-8')
+        self.invite_group1 = cf.get('wechat','invite_group1')
+        self.invite_group2 = cf.get('wechat','invite_group2')
  
         self.send_morning = u'@all 早上好'
         self.send_night = u'@all 晚安哦'
-        group_note = cf.get('wechat', 'group_note').decode('utf-8')
+        group_note = cf.get('wechat', 'group_note')
         self.group_note_list=group_note.strip(',').split(',')
-        group_jianbao = cf.get('wechat', 'group_jianbao').decode('utf-8')
+        group_jianbao = cf.get('wechat', 'group_jianbao')
         self.group_jianbao_list=group_jianbao.strip(',').split(',')
-        group_newcomer = cf.get('wechat', 'group_newcomer').decode('utf-8')
-        group_newcomer1 = cf.get('wechat', 'group_newcomer1').decode('utf-8')
+        group_newcomer = cf.get('wechat', 'group_newcomer')
+        group_newcomer1 = cf.get('wechat', 'group_newcomer1')
         self.group_newcomer_list=group_newcomer.strip(',').split(',')
         self.group_newcomer_list1=group_newcomer1.strip(',').split(',')
-        self.send_time = cf.get('wechat', 'send_time').decode('utf-8')
-        self.send_talks = cf.get('wechat', 'send_talks').decode('utf-8')
+        self.send_time = cf.get('wechat', 'send_time')
+        self.send_talks = cf.get('wechat', 'send_talks')
      
         if not os.path.exists(self.path):
             os.mkdir(self.path)
@@ -269,22 +269,21 @@ class GroupMessage():
                         self.friend.send(article.url)
             """
             if msg.type == SHARING and msg.sender.name == '简报微刊':
-            #if msg.type == SHARING and msg.sender.name == '第壹简报':
                 for article in msg.articles:
                     if '简报微刊' in article.title:
-                    #if '第壹简报' in article.title:
                         #self.friend.send(article.title)
                         #self.friend.send(article.url)
                         jb = jianbao.Get_Jianbao(article.url)
                         jb_content = jb.out_jianbao()
                         self.jb_content = jb_content
+                        logger.info(jb_content)
                         #self.friend.send(jb_content)
 
                         for group_n in self.group_jianbao_list:
                             try:
                                 my_group = self.bot.groups().search(group_n)[0]
                                 my_group.send(jb_content)
-                            except IndexError,e:
+                            except(IndexError,e):
                                 logger.error('%s not exists, please check it!' %val)
             if msg.type == SHARING and msg.sender.name == '第壹简报':
                 for article in msg.articles:
@@ -294,13 +293,14 @@ class GroupMessage():
                         _jb = diyi.Get_Jianbao(article.url)
                         diyi_content = _jb.out_jianbao()
                         self.diyi_content = diyi_content
+                        logger.info(diyi_content)
                         #self.friend.send(jb_content)
 
                         for group_n in self.group_jianbao_list:
                             try:
                                 my_group = self.bot.groups().search(group_n)[0]
                                 my_group.send(diyi_content)
-                            except IndexError,e:
+                            except(IndexError,e):
                                 logger.error('%s not exists, please check it!' %val)
 
 
@@ -458,7 +458,7 @@ class GroupMessage():
         for group_n in self.group_note_list:
             try:
                 my_group = self.bot.groups().search(group_n)[0]
-            except IndexError,e:
+            except(IndexError,e):
                 logger.error('%s not exists, please check it!' %group_n)
                 continue
 

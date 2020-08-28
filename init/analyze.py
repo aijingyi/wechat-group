@@ -164,4 +164,4 @@ if __name__ == "__main__":
     group_mem = GroupMembers('log',group)
     print_out = group_mem.analyze_mem()
     if print_out:
-        print print_out
+        print(print_out)

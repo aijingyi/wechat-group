@@ -2,7 +2,7 @@
 
 
 import re
-import urllib2
+import urllib
 from bs4 import BeautifulSoup
 import datetime
 
@@ -15,7 +15,7 @@ class Get_Jianbao():
         #print self.head_num
 
     def get_html(self):
-        response = urllib2.urlopen(self.jianbao_url)
+        response = urllib.request.urlopen(self.jianbao_url)
         html = response.read()
         #print html
         return html
@@ -55,11 +55,10 @@ class Get_Jianbao():
 
 if __name__ == '__main__':
     jianbao = []
-    #jianbao.append('https://mp.weixin.qq.com/s/_YNcV5iT_PwBlz-I6D0Yxg')
-    #jianbao.append('https://mp.weixin.qq.com/s/rXUUdM_wuERPpm2u65WzsA')
-    #jianbao.append('https://mp.weixin.qq.com/s/fQ_oOcL4bscvz1ksGe5oSg')
     jianbao.append('https://mp.weixin.qq.com/s/8kW_WETToHGcAOGZZKwFcg')
+    jianbao.append('https://mp.weixin.qq.com/s/47vEp_FWvZfbQofZGI4R8g')
+
     for jianbao_url in jianbao:
         jb = Get_Jianbao(jianbao_url)
         content = jb.out_jianbao()
-        print content
+        print(content)

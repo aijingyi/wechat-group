@@ -52,4 +52,4 @@ class Xiaodou(object):
 if __name__ == "__main__":
     key = 'dm9jcG09VW5JPWFOZ2g5SjdjUXZRbDRNbGhnQUFBPT0'
     xiaodou = Xiaodou(key)
-    print xiaodou.handle('你好')
+    print(xiaodou.handle('你好'))
