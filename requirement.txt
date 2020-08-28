@@ -1,4 +1,6 @@
 wxpy
 schedule
 pillow
+configparser
+bs4
 

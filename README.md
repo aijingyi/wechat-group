@@ -1,5 +1,9 @@
 微信群助手    wechat group assitant
 
+2020.8.28 
+update wecaht group to support python3
+
+
 主要功能：
 * 记录群聊天信息，包括文本信息、图片、附件、语音、红包提示、链接
 * 欢迎新人入群
@@ -11,7 +15,7 @@
 
 
 环境与依赖：
-此版本运行于Python 2.7环境。
+此版本运行于Python 3.7.5环境。
 安装所需包：pip install -r requirments.txt
 
 使用方法：
