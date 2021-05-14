@@ -33,4 +33,3 @@ material 素材目录
 联系我：
 e-mail:kevinlaung@sina.com
 github: github.com/aijingyi
-wechat: kevinlaung
